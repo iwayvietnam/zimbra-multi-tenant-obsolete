@@ -1,5 +1,0 @@
-name = Zaas
-description = Zimbra as a Service.
-core = 7.x
-files[] = zaas.module
-version = "1.0"
