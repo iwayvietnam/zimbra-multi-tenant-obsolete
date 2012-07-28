@@ -1,0 +1,216 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the zimbra command module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function zaas_schema() {
+
+  $schema['zmcommand'] = array(
+  
+    'description' => 'The saved zimbra command table.',
+    
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a zimbra command.',
+        'type' => 'serial',
+      ),
+      
+    'user' => array(
+        'description' => 'The user makes zimbra command.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+    ),
+      
+      'domain' => array(
+        'description' => 'The domain where executes zimbra command.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+       'ip' => array(
+        'description' => 'The IP of domain.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'command' => array(
+        'description' => 'The  executes zimbra command.',
+        'type' => 'varchar',
+        'length' => 1000,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+	  'result' => array(
+        'description' => 'The  executes zimbra command.',
+        'type' => 'varchar',
+        'length' => 1000,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'description' => 'Status about command.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the zimbra command was created.',
+       'type' => 'varchar',
+		'length' => 1000,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+	'received' => array(
+        'description' => 'The Unix timestamp when the zimbra command was received.',
+       'type' => 'varchar',
+		 'length' => 1000,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'unique keys' => array(
+      'id' => array('id'),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['zmpasskey'] = array(
+    'description' => 'Identifies key for each server when It contact to Drupal Server',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The {zimbra pass key ID}. this record affects.',
+        'type' => 'serial',
+      ),
+      'ip' => array(
+        'description' => 'The ip contact to Drupal server where privileges on the zimbra command.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'passkey' => array(
+        'description' => 'The password key share between server and drupal.',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'description' => 'Active or not This server .',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  $schema['zmdomain'] = array(
+    'description' => 'Domain manager',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The {zimbra pass key ID}. this record affects.',
+        'type' => 'serial',
+      ),
+      'domain' => array(
+        'description' => "The domain contact to Drupal server where privileges on the zimbra command.",
+        'type' => 'varchar',
+        'length' => 555,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'ip' => array(
+        'description' => 'The ip contact to Drupal server where privileges on the zimbra command.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'tenant' => array(
+        'description' => 'The password key share between server and drupal.',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'domainmanager' => array(
+        'description' => 'Active or not This server .',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+	  'quota' => array(
+        'description' => 'Active or not This server .',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+$schema['zmtenant'] = array(
+    'description' => 'Domain manager',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The {zimbra pass key ID}. this record affects.',
+        'type' => 'serial',
+      ),
+      'ip' => array(
+        'description' => 'The ip contact to Drupal server where privileges on the zimbra command.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'user' => array(
+        'description' => 'The password key share between server and drupal.',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+	  'quota' => array(
+        'description' => 'Active or not This server .',
+		'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+/*
+function zaas_install() {
+  // Populate the zimbra command access table.
+  db_insert('zaas_access')
+    ->fields(array(
+      'nid' => 0,
+      'gid' => 0,
+      'realm' => 'all',
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+    ))
+    ->execute();
+}
+
+
+
+*/
