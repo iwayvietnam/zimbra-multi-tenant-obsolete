@@ -1,0 +1,2058 @@
+<?php
+
+/**
+ * @file
+ * The core that allows content to be submitted to the site. Modules and
+ * scripts may programmatically submit nodes using the usual form API pattern.
+ */
+
+ini_set('display_errors',1);
+/**
+ * Implements hook_help().
+ */
+function zaas_help($path, $arg) {
+  // Remind site administrators about the {zaas_access} table being flagged
+  // for rebuild. We don't need to issue the message on the confirm form, or
+  // while the rebuild is being processed.
+  
+}
+function zaas_permission() {
+  return array(
+    'access admin page' => array(
+      'title' => t('Access admin page'),
+      'description' => t('Allow Tenant and super Admin'),
+    ),
+    'access zimbra page' => array(
+      'title' => t('Access zimbra page'),
+      'description' => t('Allow domain admin manages own domain'),
+    ),
+    'super admin page' => array(
+      'title' => t('Supper Admin manages page'),
+      'description' => t('Allow SUPER admin manages domains and servers'),
+    ),
+  );
+}
+function zaas_menu() {
+	$items['sv/%/%/%'] = array(
+    'title' => 'Handle Server Connection',
+    'page callback' => 'zaas_arguments',
+    'page arguments' => array(1,2,3),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+  );
+   $items['zimbra/admin'] = array(
+    'title' => 'Zimbra Admin Manager',
+    'page callback' => 'zaas_description',
+    'access callback' => TRUE,
+    'expanded' => TRUE,
+    
+  );
+
+############################  server   ######################################
+  $items['zimbra/admin/server'] = array(
+    'title' => 'Manage Servers',
+    'page callback' => 'zaas_admin_server',
+    'access arguments' => array('super admin page'),
+  );
+   $items['zimbra/admin/server/create'] = array(
+    'title' => 'Create New Server Connection',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_server_create_form'),
+    'description' => 'How to use the #states attribute in FAPI',
+    'access arguments' => array('super admin page'),
+  );
+  $items['zimbra/admin/server/edit/%'] = array(
+    'title' => 'Edit Server Connection',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_server_edit_form',4),
+    'description' => 'How to use the #states attribute in FAPI',
+    'access arguments' => array('super admin page'),
+  );
+  $items['zimbra/admin/server/delete/%'] = array(
+    'title' => 'Delete Server',
+    'page callback' => 'zaas_admin_server_delete',
+    'page arguments' => array(4),
+    'access arguments' => array('super admin page'),
+  );
+  ############################ END server   ######################################
+  /*
+  $items['zimbra/admin/domain'] = array(
+    'title' => 'Manager Domain',
+    'page callback' => 'zaas_admin_domain',
+    'access arguments' => array('access admin page'),
+  );
+  */
+  
+  ############################# COMMAND RESULT #####################################
+  $items['zimbra/admin/command'] = array(
+    'title' => 'Command Status',
+    'page callback' => 'zaas_zimbra_command',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('access zimbra page'),
+  );
+  $items['zimbra/admin/command/update/%'] = array(
+    'title' => 'Edit a Command',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_command',
+    'page arguments' => array('','','update',4),
+  );
+  $items['zimbra/admin/command/delete/%'] = array(
+    'title' => 'Delete a Command',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_command',
+    'page arguments' => array('','','delete',4),
+  ); 
+  ############################# COMMAND RESULT #####################################
+	
+	  
+  ############################  Manage Tenant   ###################################### 
+  $items['zimbra/admin/tenant'] = array(
+    'title' => 'Manage Tenant',
+    'page callback' => 'zaas_admin_user',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('super admin page'),
+  );
+    $items['zimbra/admin/tenant/create'] = array(
+    'title' => 'Create New User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_user','create'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/tenant/list'] = array(
+    'title' => 'List all User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'zaas_admin_user',
+    'page arguments' => array('','','list'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/tenant/edit/%'] = array(
+    'title' => 'Edit a User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_user','edit',4),
+  );
+  $items['zimbra/admin/tenant/delete/%'] = array(
+    'title' => 'Delete a User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_user','delete',4),
+  );
+  	  
+  ############################  Manage Domain manager   ###################################### 
+  $items['zimbra/admin/domainmanager'] = array(
+    'title' => 'Manage Domain Manager',
+    'page callback' => 'zaas_admin_domainmanager',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('access admin page'),
+  );
+    $items['zimbra/admin/domainmanager/create'] = array(
+    'title' => 'Create New User',
+    'access arguments' => array('access admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_domainmanager','create'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/domainmanager/list'] = array(
+    'title' => 'List all User',
+    'access arguments' => array('access admin page'),
+    'page callback' => 'zaas_admin_domainmanager',
+    'page arguments' => array('','','list'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/domainmanager/edit/%'] = array(
+    'title' => 'Edit a User',
+    'access arguments' => array('access admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_domainmanager','edit',4),
+  );
+  $items['zimbra/admin/domainmanager/delete/%'] = array(
+    'title' => 'Delete a User',
+    'access arguments' => array('access admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_admin_domainmanager','delete',4),
+  );
+   ############################ MailBox   ###################################### 
+  $items['zimbra/admin/mailbox'] = array(
+    'title' => 'Manage Mailbox',
+    'access arguments' => array('access zimbra page'),
+    'page arguments' => array('','','list'),
+    'page callback' => 'zaas_zimbra_mailbox',
+  );
+  $items['zimbra/admin/mailbox/create'] = array(
+    'title' => 'Create New Mailbox',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_mailbox','create'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/mailbox/update'] = array(
+    'title' => 'Update List Mailbox',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_mailbox',
+    'page arguments' => array('','','update'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/mailbox/edit/%'] = array(
+    'title' => 'Edit a Mailbox',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_mailbox','edit',4),
+  );
+  $items['zimbra/admin/mailbox/delete/%'] = array(
+    'title' => 'Delete a Mailbox',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_mailbox','delete',4),
+  );
+   ############################ END MailBox   ######################################  
+   
+   
+   ############################ ALIAS   ###################################### 
+  $items['zimbra/admin/alias'] = array(
+    'title' => 'Manage Alias',
+    'access arguments' => array('access zimbra page'),
+    'page arguments' => array('','','list'),
+    'page callback' => 'zaas_zimbra_alias',
+  );
+  $items['zimbra/admin/alias/create'] = array(
+    'title' => 'Create New alias',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_alias','create'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/alias/update'] = array(
+    'title' => 'Update List alias',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_alias',
+    'page arguments' => array('','','update'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/alias/edit/%'] = array(
+    'title' => 'Edit a alias',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_alias','edit',4),
+  );
+  $items['zimbra/admin/alias/delete/%'] = array(
+    'title' => 'Delete a alias',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_alias','delete',4),
+  );
+   ############################ END ALIAS   ######################################  
+   
+   
+  ############################ GROUP   ######################################
+  $items['zimbra/admin/group'] = array(
+    'title' => 'Manage Group',
+    'page callback' => 'zaas_zimbra_group',
+    'access arguments' => array('access zimbra page'),
+    'page arguments' => array('','','list'),
+  );
+   $items['zimbra/admin/group/create'] = array(
+    'title' => 'Create New group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_group','create'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/group/update'] = array(
+    'title' => 'Update List group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_group',
+    'page arguments' => array('','','update'),
+	'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/group/edit/%'] = array(
+    'title' => 'Edit a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_group','edit',4),
+  );
+  $items['zimbra/admin/group/delete/%'] = array(
+    'title' => 'Delete a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_group','delete',4),
+  );
+  $items['zimbra/admin/group/add_email/%'] = array(
+    'title' => 'Edit a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_group','add_email',4),
+  );
+  $items['zimbra/admin/group/list_email/%'] = array(
+    'title' => 'List all email in a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_group',
+    'page arguments' => array('','','list_email',4),
+  );
+  $items['zimbra/admin/group/update_email_list/%'] = array(
+    'title' => 'Update email list for a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'zaas_zimbra_group',
+    'page arguments' => array('','','update_email_list',4),
+  );
+  $items['zimbra/admin/group/remove_email/%'] = array(
+    'title' => 'Delete a group',
+    'access arguments' => array('access zimbra page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zaas_zimbra_group','remove_email',4),
+  );
+   ############################ END GROUP   ######################################
+  return $items;
+}
+
+/*
+	When a Zimbra server connect to Drupal, It need checking IP and password.
+	If pass, Drupal will send command to Zimbra OR receive the result after it was processed
+*/
+function zaas_arguments($type,$ip,$secret) {
+// Send command
+if($type =='get' && empty($_POST) ) {
+  $select = db_select('zmpasskey','c');
+  $select->fields('c') ->condition('ip', $ip);
+	$rs = $select->execute()->fetchAll();
+	echo '<?xml version="1.0" encoding="UTF-8"?><root>';
+	if (empty($rs)) {
+		// there no setting
+		echo '<error>1</error>';
+	}
+	else {
+		$r = $rs[0];
+		if ($r->passkey == $secret){
+			// pass IP and password
+			echo '<error>0</error>';
+			$select2 = db_select('zmcommand','c');
+  			$select2->fields('c') ->condition('ip', $ip)->condition('status', '0');
+				$rs2 = $select2->execute()->fetchAll();
+				if( !empty($rs2)) {
+					foreach($rs2 as $r2) {
+						// write all command in data base
+						echo '<command><id>'.$r2->id.'</id><request>'.$r2->command.'</request></command>';
+						// then update the status of command, from 0 -> 2
+						$entry['status'] = '2';
+						$entry['received'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+						db_update('zmcommand')
+							->fields($entry)
+							->condition('id', $r2->id)
+							->execute();
+					}
+				}
+				else {
+					echo '<command></command>';
+				}
+		}
+		else echo '<error>2</error>'; 	
+	}
+echo '</root>';
+}
+// Get result
+else if($type =='return' && !empty($_POST) ) {
+	$select = db_select('zmpasskey','c');
+	$select->fields('c') ->condition('ip', $ip);
+	$rs = $select->execute()->fetchAll();
+	echo '<?xml version="1.0" encoding="UTF-8"?><root>';
+	if (empty($rs)) {
+		echo '<error>1</error>';
+	}
+	else {
+		$r = $rs[0];
+		if ($r->passkey == $secret){
+			echo '<error>0</error>'; 	
+			//print_r($_POST);
+			$ids = array_filter(explode(',',$_POST['id']));
+			$comms = explode('::zaasmhst::',$_POST['result']) ;
+			//print_r($ids);print_r($comms);
+			$entry = array();
+			foreach($ids as $i=>$id) {
+				$entry['status'] = '1';
+				$entry['received'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+				if( isset($comms[$i]) && !empty($comms[$i]) ) $entry['result'] = $comms[$i];
+				else $entry['result'] = '';
+				db_update('zmcommand')
+					->fields($entry)
+					->condition('id', $id)
+                    ->execute();
+             }
+		}
+		else echo '<error>2</error>'; 	
+	}
+}
+die;	// return without Drupal page, only in XML
+}
+
+/*
+	This is a description about ZaaS system.
+
+*/
+function zaas_description() {
+  //return array('#markup' => t('The zaas_example provides two pages, "simple" and "arguments". The <a href="@simple_link">simple page</a> just returns a renderable array for display. The <a href="@arguments_link">arguments page</a> takes two arguments and displays them, as in @arguments_link', array('@simple_link' => url('examples/zaas_example/simple', array('absolute' => TRUE)), '@arguments_link' => url('examples/zaas_example/arguments/23/56', array('absolute' => TRUE)))));
+  return array('#markup' => t('This admin page for zimbra mail server.<br />This is a Expand Features for Zimbra Open Source Version which has limit features. Zimbra as a Service uses Drupal for GUI between User (admin manager) and Service (Zimbra server). Some advanced feature such as:
+
+<br/>System Admin: Manage quota, Manage tenant, Scheduler (retrieve/process scheduled requests from DB)
+<br/>
+<br/>Domain Admin: Manage mailbox, Manage alias, Manage group
+<br/>
+<br/>Tenant: Manage domains 
+<br/>
+<br/>Login to use all feature.
+
+
+'));
+}
+
+/*
+	Below there are functions about features
+
+
+*/
+function zaas_admin_server($type='list') {
+	// manage information about server, secret key,...
+	// Read all fields from the dbtng_example table.
+  $select = db_select('zmpasskey','c');
+  $select->fields('c');
+	$render_array[] = array('#markup' => t('<a href="@simple_link">Create New Servers Connection</a><br><br>',
+											array('@simple_link' => url('zimbra/admin/server/create', array('absolute' => TRUE))))
+							);
+	$rs = $select->execute()->fetchAll();
+	if( empty($rs) ) {
+		$render_array[] = array('#markup' =>t('<br>There is no record'));
+		}
+	else {
+		$render_array[] = array('#markup' =>t('<br>The list of connect servers<br>'));
+		$render_array[] = array('#markup' =>t('<table border=0><tr><td>ID</td><td>IP</td><td>SecretKey</td><td>status</td><td>Delete</td></tr>'));
+			foreach($rs as $r) {
+				$render_array[] = array('#markup' =>t('<tr><td>'.$r->id.'</td><td><a href="@simple_link">'.$r->ip.'</a></td><td>'.$r->passkey.'</td><td>'.$r->status.'</td>
+															<td><a href="@simple_link2">Delete</a></td></tr>'
+														,array('@simple_link' => url('zimbra/admin/server/edit/'.$r->id, array('absolute' => TRUE)),
+																'@simple_link2' => url('zimbra/admin/server/delete/'.$r->id, array('absolute' => TRUE)))
+														));
+			}
+		}
+		$list = t('');
+		$render_array[] = array('#markup' =>t('</table>'));
+
+  return $render_array;
+//	return $str; //array('#markup' => '<p>Ok</p>');
+}
+
+function zaas_admin_server_create_form($form, $form_state) {
+	$form['Server_IP'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Server IP'),
+	);
+	$form['Server_Secret'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Server Secret key for authenticating'),
+	);
+	$form['submit'] = array(
+		//  '#name' => 'finish',
+		'#value' => t('Create New'),
+		'#type' => 'submit',
+		//  '#submit' => array('zaas_admin_server_create_form_submit'),
+		);
+	return $form;
+}
+function zaas_admin_server_create_form_submit($form, $form_state) {
+	$render_array = t('You have just inputed:<br />Server IP: '.$form_state['values']['Server_IP']
+			.'<br />Server  Secret Key: '.$form_state['values']['Server_Secret'].'<br>Successful!.');
+	$entry = array();
+	$entry['ip'] = $form_state['values']['Server_IP'];
+	$entry['passkey'] = $form_state['values']['Server_Secret'];
+	$entry['status'] = 1;
+	try {
+		$return_value = db_insert('zmpasskey')
+                    ->fields($entry)
+                    ->execute();
+	}
+	catch (Exception $e) {
+		drupal_set_message(t('db_insert failed. Message = %message, query= %query',
+		array('%message' => $e->getMessage(), '%query' => $e->query_string)), 'error');
+	}
+	drupal_set_message($render_array);
+
+}
+
+
+function zaas_admin_server_edit_form($form, $form_state,$id) {
+if ( !isset($form_state) ) {
+}
+	$select = db_select('zmpasskey', 'c')
+        ->fields('c')
+        ->condition('id', $id)
+        ->execute();
+  	$rs = $select->fetchAll();
+	if( empty($rs) ) {
+		$render_array[] = array('#markup' =>t('<br>There is no record'));
+		}
+	else {
+			foreach($rs as $r) {
+				$Server_IP = $r->ip;
+				$Status = $r->status;
+				$Server_Secret = $r->passkey;
+			}
+		}  
+	$form['Server_IP'] = array(
+		'#type' => 'textfield',
+		'#default_value'=> $Server_IP,
+		'#title' => t('Server IP'),
+	);
+	$form['Server_Secret'] = array(
+		'#type' => 'textfield',
+		'#default_value'=> $Server_Secret,
+		'#title' => t('Server Secret key for authenticating'),
+	);
+	$form['Status'] = array(
+		'#type' => 'textfield',
+		'#default_value'=> $Status,
+		'#title' => t('Status of this connection'),
+	);
+	$form['id'] = array(
+		'#type' => 'hidden',
+		'#default_value'=> $id,
+		'#title' => t('ID of this record'),
+	);
+	$form['submit'] = array(
+		//  '#name' => 'finish',
+		'#value' => t('Save Edit'),
+		'#type' => 'submit',
+		//  '#submit' => array('zaas_admin_server_create_form_submit'),
+		);
+	return $form;
+}
+function zaas_admin_server_edit_form_submit($form, $form_state) {
+	$render_array = t('You have just inputed:<br />Server IP: '.$form_state['values']['Server_IP'].'<br />Server Secret Key: '.$form_state['values']['Server_Secret'].'<br />Connection status: '.$form_state['values']['Status'].'<br>Successful!.');
+	$entry = array();
+	$entry['ip'] = $form_state['values']['Server_IP'];
+	$entry['passkey'] = $form_state['values']['Server_Secret'];
+	$entry['id'] = $form_state['values']['id'];
+	$entry['status'] =$form_state['values']['Status'];
+	try {
+    $return_value = db_update('zmpasskey')
+					->fields($entry)
+					->condition('id', $entry['id'])
+                    ->execute();
+  }
+  catch (Exception $e) {
+    drupal_set_message(t('db_insert failed. Message = %message, query= %query',
+      array('%message' => $e->getMessage(), '%query' => $e->query_string)), 'error');
+  }
+	drupal_set_message($render_array);
+
+}
+
+function zaas_admin_server_delete($id) {
+	$num_deleted = db_delete('zmpasskey')
+				->condition('id', $id)
+				->execute();
+	drupal_set_message(t('Delete Successful ID: '.$id));
+	drupal_goto(url('zimbra/admin/server',array('absolute' => TRUE)) );
+}
+function zaas_admin_domain() {
+  return array('#markup' => '<h1>' . t('Manager Domain.') . '</h1><p>' . t('This page for only Tenant and Super admin access.') . '</p>');
+}
+
+
+
+############################  TENANT   ######################################
+
+function zaas_admin_user_submit($form, $form_state) {
+	global $user;
+	$username = $user->name;
+	if( $form_state['values']['typeaction'] == 'edit' ) {
+		$entry = array();
+		$entry['user'] = $form_state['values']['user'];
+		$entry['ip'] = '';
+		foreach($form_state['values']['ip'] as $key=>$value) {
+			if($value != '') $entry['ip'] .= $value.',';
+		}
+		$entry['ip'] = trim($entry['ip'],',');
+		$entry['quota'] = $form_state['values']['quota'];
+		$id = $form_state['values']['id'];
+		db_update('zmtenant')
+                ->fields($entry)
+                ->condition('id', $id)
+                ->execute();	              
+		drupal_set_message('Update sucessfull!');
+	}
+	else if( $form_state['values']['typeaction'] == 'create' )  {
+		$entry = array();
+		//var_dump($form_state['values']);die;
+		$entry['ip'] = '';
+		foreach($form_state['values']['ip'] as $key=>$value) {
+			if($value != '') $entry['ip'] .= $value.',';
+		}
+		$entry['ip'] = trim($entry['ip'],',');
+		$entry['user'] = $form_state['values']['user'];
+		//$entry['ip'] = $form_state['values']['ip'];
+		$entry['quota'] = $form_state['values']['quota'];
+		foreach( user_roles() as $idper=>$per) {
+			if($per == 'Tenant') break;
+		}
+		if( $per != 'Tenant') die('Please SET ROLE as discription in DOCUMENTARY');
+		db_insert('zmtenant')
+                    ->fields($entry)
+                    ->execute();
+		// insert new User:
+		$check_ =  user_load_by_name( $form_state['values']['user'] );
+		if( empty( $check_) ) {
+			$info = array('status' => 1,
+				'roles' => array($idper=>'Tenant'),
+				'pass' => $form_state['values']['pass'],
+				'name' => $form_state['values']['user'],
+				'mail' => $form_state['values']['user'],
+				'init' => $form_state['values']['user'],
+				);
+			user_save(NULL,$info);
+			drupal_set_message('Create Drupal user suceessful!');
+		}
+		drupal_set_message('Create user suceessful!');
+	}
+	else if( $form_state['values']['typeaction'] == 'delete' ) {
+		$id = $form_state['values']['id'];
+		db_delete('zmtenant')
+             ->condition('id', $id)
+            ->execute();
+		drupal_set_message('Delete suceessful!');
+	}
+}
+
+	
+ 
+function zaas_admin_user($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager User.') . '</h1><p>' . t('This page for only Tenant and Super admin access.') . '</p>';
+  	if(  $type == 'edit') {
+  		  $select = db_select('zmtenant', 'c')
+				->fields('c')
+				->condition('id', $action)
+				->execute();
+			$rs = $select->fetchAll();
+			$r = $rs[0];
+			// display form input
+			$form['user'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $r->user,
+				'#title' => t('Edit name of account ').$r->user,
+			);
+			$server_list = zaas_getServer();
+			$ser_sel = explode(',',$r->ip);
+			$ser_sel2 = array_values($ser_sel);
+			$ser_sel = array_combine($ser_sel2,$ser_sel);
+			$form['ip'] = array(
+				'#type' => 'checkboxes', 
+				'#title' => t('Default options'), 
+				'#default_value' =>$ser_sel,
+				'#options' => $server_list
+			  );
+			$form['quota'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $r->quota,
+				'#title' => t('Number of domain this Tenant can create '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'edit',
+			);
+			$form['id'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Save Edit'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'create') {
+		$server_list = zaas_getServer();
+		$form['user'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Create name of account Tenant'),
+		);
+		$form['ip'] = array(
+			'#type' => 'checkboxes', 
+			'#title' => t('Default options'), 
+			//'#default_value' => variable_get('node_options_'. $node->type, array('status', 'promote')),
+			'#options' => $server_list
+		  );
+		$form['pass'] = array(
+			'#type' => 'password',
+			'#title' => t('Password'),
+		);
+		$form['quota'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Number of domain this Tenant can create'),
+		);
+		$form['typeaction'] = array(
+			'#type' => 'hidden',
+			'#default_value'=> 'create',
+		);
+		$form['submit'] = array(
+			//  '#name' => 'finish',
+			'#value' => t('Create'),
+			'#type' => 'submit',
+			//  '#submit' => array('zaas_admin_server_create_form_submit'),
+			);
+		return $form;
+	}
+	else if(  $type == 'delete') {
+		$form['id'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'delete',
+			);
+		$form['submit'] = array(
+				'#value' => t('Confirm delete account ID: ').$action,
+				'#type' => 'submit',
+				);
+		return $form;
+	}
+	else {
+		
+			$select = db_select('zmtenant', 'c')->fields('c')->execute();
+			ini_set('display_errors',0);
+			$rs = $select->fetchAll();
+			if ( !empty($rs) ) {
+				$str .= '<table border=0><tr><td>ID</td><td>User</td><td>IP(s)</td><td>Quota</td><td>Edit</td><td>Delete</td></tr>';
+				$i = 1;
+				
+				foreach ($rs as $r ) {
+					//$arr = $r->result;
+				//	var_dump($r);
+					$str .= t('<tr><td>'.$i.'</td><td>'.$r->user.'</td><td>'.$r->ip.'</td><td>'.$r->quota.'</td><td><a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+								array('@simple_link' => url('zimbra/admin/tenant/edit/'.$r->id, array('absolute' => TRUE)),
+									    '@simple_link2' => url('zimbra/admin/tenant/delete/'.$r->id, array('absolute' => TRUE)) ) 
+								
+								);
+						
+						$i++;
+					
+				}
+				$str .= '</table><br />Quota: Number of domain a Tenant can create';
+			}
+	}
+	return array('#markup' => $str);
+}
+
+
+
+############################  END Tenant   ######################################
+############################  DOMAIN MANAGER    ######################################
+
+function zaas_admin_domainmanager_submit($form, $form_state) {
+	global $user;
+	$username = $user->name;
+	if( $form_state['values']['typeaction'] == 'edit' ) {
+		$entry = array();
+		$entry['domainmanager'] = $form_state['values']['domainmanager'];
+		$entry['ip'] = $form_state['values']['ip'];
+		$entry['quota'] = $form_state['values']['quota'];
+		$id = $form_state['values']['id'];
+		db_update('zmdomain')
+                ->fields($entry)
+                ->condition('id', $id)
+                ->execute();	              
+		drupal_set_message('Update sucessfull!');
+	}
+	else if( $form_state['values']['typeaction'] == 'create' )  {
+		// check Tenant quota
+		if( !user_access('super admin page')  ) {
+			$select = db_select('zmtenant', 'c')
+				->fields('c')
+				->condition('user', $username)
+				->execute();
+			$rs = $select -> fetchAll();
+			if( empty($rs) ) return FALSE;
+			$r = $rs[0];
+			$quota = $r->quota;
+			if( !( $quota >0 ) ) {
+				drupal_set_message('Run of Quota for creating new Domain manager!','error');
+				return FALSE;
+			}
+		}
+		$form_state['values']['domainmanager'] = $form_state['values']['domainmanager'].'@'.$form_state['values']['domain'];
+		 $select3 = db_select('zmdomain', 'c')
+				->fields('c')
+				->condition('domain', $form_state['values']['domain'])
+				->execute();
+		$rs3 = $select3->fetchAll();
+		if( empty($rs3) ) {
+			$entry = array();
+			$entry['domain'] = $form_state['values']['domain'];
+			$entry['ip'] = $form_state['values']['ip'];
+			$entry['tenant'] = $username;//$form_state['values']['tenant'];
+			$entry['domainmanager'] = $form_state['values']['domainmanager'];
+			$entry['quota'] = $form_state['values']['quota'];
+			db_insert('zmdomain')
+						->fields($entry)
+						->execute();
+		}
+		else {
+			// Update Domain manager
+			$r3 = $rs3[0];
+			if( $r3->tenant != $username && !user_access('super admin page') ) {
+				drupal_set_message('No, You are overriding a domain that not be created by you!','error');
+				return;
+			}
+			$entry = array();
+			$entry['domainmanager'] = $form_state['values']['domainmanager'];
+			db_update('zmdomain')
+					->fields($entry)
+					->condition('domain', $form_state['values']['domain'])
+					->execute();	              
+			drupal_set_message('Update sucessfull!');
+		}
+		// update to Tenant quota
+		if( !user_access('super admin page') && empty($rs3) ) {
+			$quota =  $quota - 1;
+			$entry2 = array();
+			$entry2['quota'] = $quota;
+			db_update('zmtenant')
+						->fields($entry2)
+						->condition('user', $username)
+						->execute();	
+		}
+		$select = db_select('zmdomain', 'c')
+						->fields('c')->condition('tenant', $username)->execute();
+		foreach( user_roles() as $idper=>$per) {
+			if($per == 'Domain manager') break;
+		}
+		if( $per != 'Domain manager') die('Please SET ROLE as discription in DOCUMENTARY');
+		// insert new User:
+		$check_ =  user_load_by_name( $form_state['values']['domainmanager'] );
+		if( empty( $check_) ) {
+			$info = array('status' => 1,
+				'roles' => array($idper=>'Domain manager'),
+				'pass' => $form_state['values']['pass'],
+				'name' => $form_state['values']['domainmanager'],
+				'mail' => $form_state['values']['domainmanager'],
+				'init' => $form_state['values']['domainmanager'],
+				);
+			user_save(NULL,$info);
+			drupal_set_message('Create Drupal user suceessful!');
+		}
+		drupal_set_message('Create Domain manager user suceessful!');
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'cd '.$form_state['values']['domain'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		//list($acc_n,$domain) = explode('@',$form_state['values']['username']);
+		$entry['ip'] = zaas_getIPFromDomain($form_state['values']['domain']);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Wait for creating new domain command from Zimbra server!');
+		//die;
+	}
+	else if( $form_state['values']['typeaction'] == 'delete' ) {
+		$id = $form_state['values']['id'];
+		$select = db_select('zmdomain', 'c')
+				->fields('c')
+				->condition('id', $id)
+				->execute();
+		$rs = $select->fetchAll();
+		$r = $rs[0];
+		// Delete in Drupal DB
+		db_delete('zmdomain')
+             ->condition('id', $id)
+            ->execute();
+        // Delete from server
+        
+        $entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'dd '.$r->domain;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		//list($acc_n,$domain) = explode('@',$form_state['values']['username']);
+		$entry['ip'] = zaas_getIPFromDomain($r->domain );
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$r->domain.'. Please ask your Administrator');
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Delete suceessful!');
+		drupal_set_message('Wait for deleting domain command from Zimbra server!');
+	}
+}
+
+	
+ 
+function zaas_admin_domainmanager($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager User.') . '</h1><p>' . t('This page for only Tenant and Super admin access.') . '</p>';
+  	if(  $type == 'edit') {
+  		  $select = db_select('zmdomain', 'c')
+				->fields('c')
+				->condition('id', $action)
+				->execute();
+			$rs = $select->fetchAll();
+			$r = $rs[0];
+			// display form input
+			$form['domainmanager'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $r->domainmanager,
+				'#title' => t('Edit name of account ').$r->domainmanager,
+				'#description'=>'Tenant: '.$r->tenant,
+			);
+			$select2 = db_select('zmtenant', 'c')
+				->fields('c')
+				->condition('user', $username)
+				->execute();
+			$rs2 = $select2->fetchAll();
+			$r2 = $rs2[0];
+			$ser_sel = explode(',',$r2->ip);
+			$ser_sel2 = array_values($ser_sel);
+			$ser_sel = array_combine($ser_sel2,$ser_sel);
+			
+			$form['ip'] = array(
+				'#type' => 'select', 
+				'#title' => t('Assign IP server for your domain'), 
+				'#default_value' => array($r->ip=>$r->ip),
+				'#options' =>$ser_sel,
+				);
+			$form['quota'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $r->quota,
+				'#title' => t('The number of mailbox can be created by this Domain manager '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'edit',
+			);
+			$form['id'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Save Edit'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'create') {
+			$form['domainmanager'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Create name of Domain manager ( without @ ) '),
+				'#description'=>'Tenant: '.$username,
+			);
+			$form['pass'] = array(
+				'#type' => 'password',
+				'#title' => t('Create Password of this account '),
+			);
+			if( !user_access('super admin page')  ) {
+				 $select = db_select('zmtenant', 'c')
+					->fields('c')
+					->condition('user', $username)
+					->execute();
+				$rs = $select->fetchAll();
+				if( empty($rs) ) {
+					drupal_set_message('Are You not a Tenant?!','error');
+					return;
+				}
+				$r = $rs[0];
+				if( !($r->quota > 0) ) {
+					drupal_set_message('You run out of quota to create new Domain?!','error');
+					//return;
+				}
+			}
+			else {
+				drupal_set_message('Superadmin can not user this feature! Please log as Tenant','error');
+				return FALSE;
+			}
+			// display form input
+			$ser_sel = explode(',',$r->ip);
+			$ser_sel2 = array_values($ser_sel);
+			$ser_sel = array_combine($ser_sel2,$ser_sel);
+			
+			$form['ip'] = array(
+				'#type' => 'select', 
+				'#title' => t('Assign IP server for your domain'), 
+				//'#default_value' => 'Titles plus teaser',
+				'#options' => $ser_sel,
+				);
+			$form['domain'] = array(
+				'#type' => 'textfield', 
+				'#title' => t('Assign domain for this server and Domain manager '), 
+				);
+			$form['quota'] = array(
+				'#type' => 'textfield',
+				'#title' => t('The number of mailbox can be created by this Domain manager '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'create',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Create'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'delete') {
+		$form['id'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'delete',
+			);
+		$form['submit'] = array(
+				'#value' => t('Confirm delete account ID: ').$action,
+				'#type' => 'submit',
+				);
+		return $form;
+	}
+	else {
+		
+	  
+			if( !user_access('super admin page')  ) {
+				$select = db_select('zmdomain', 'c')
+							->fields('c')->condition('tenant', $username)->execute();
+			}
+			else $select = db_select('zmdomain', 'c')->fields('c')->execute();
+			ini_set('display_errors',0);
+			$rs = $select->fetchAll();
+			if ( !empty($rs) ) {
+				$str .= '<table border=0><tr><td>ID</td><td>Tenant</td><td>Domain manager</td><td>Domains</td><td>Quota</td><td>Edit</td><td>Delete</td></tr>';
+				$i = 1;
+				
+				foreach ($rs as $r ) {
+					//$arr = $r->result;
+				//	var_dump($r);
+					$str .= t('<tr><td>'.$i.'</td><td>'.$r->tenant.'</td><td>'.$r->domainmanager.'</td><td>'.$r->domain.'</td><td>'.$r->quota.'</td><td><a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+								array('@simple_link' => url('zimbra/admin/domainmanager/edit/'.$r->id, array('absolute' => TRUE)),
+									    '@simple_link2' => url('zimbra/admin/domainmanager/delete/'.$r->id, array('absolute' => TRUE)) ) 
+								
+								);
+						
+						$i++;
+					
+				}
+				$str .= '</table><br />Quota: The number of mailbox can be created by a Domain manager ';
+			}
+	}
+  return array('#markup' => $str);
+}
+
+
+
+############################  END DOMAIN MANAGER    ######################################
+
+############################  MAIL BOX   ######################################  
+function zaas_zimbra_mailbox_submit($form, $form_state) {
+	$domains = zaas_getDomainFromUser();
+	if( $form_state['values']['typeaction'] == 'edit' ) {
+		
+		global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$email = str_replace('@','',$form_state['values']['username']).'@'.$form_state['values']['domains'];
+		$entry['command'] = 'ra '.$form_state['values']['domain'].' '.$email;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		//list($acc_n,$domain) = explode('@',$form_state['values']['username']);
+		$entry['ip'] = zaas_getIPFromDomain($form_state['values']['domains']);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($form_state['values']['domains'],$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+                    
+ 		if ( $form_state['values']['password'] != '' ) {
+		 		$entry['command'] = 'sp '.$email.' '.$form_state['values']['password'];
+ 				db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		}
+		if ( $form_state['values']['displayname'] != '' ) {
+					$entry['command'] = 'ma '.$email.' displayName \''.$form_state['values']['displayname']."'";
+					db_insert('zmcommand')
+						->fields($entry)
+						->execute();
+		}
+		if ( $form_state['values']['mailquota'] != '' ) {
+					$entry['command'] = 'ma '.$email.' zimbraMailQuota \''.($form_state['values']['mailquota']*1048576)."'";
+					db_insert('zmcommand')
+						->fields($entry)
+						->execute();
+		}
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'create' )  {
+		if( strlen($form_state['values']['password']) < 6)  {
+			drupal_set_message('The password length must be greater than 6','error');
+			return;
+		}
+		global $user;
+		$username = $user->name;
+		// check quota
+		 $select = db_select('zmdomain', 'c')
+				->fields('c')
+				->condition('domain', $form_state['values']['domains'])
+				->execute();
+		$rs = $select->fetchAll();
+		$r = $rs[0];
+		$quota = $r->quota;
+	
+		$entry = array();
+		$entry['user'] = $username;
+		$email = str_replace('@','',$form_state['values']['username']).'@'.$form_state['values']['domains'];
+		$entry['command'] = 'ca '.$email.' '.$form_state['values']['password'];
+		$entry['command'] .= $form_state['values']['displayname'] == ''?'':' displayName \''.$form_state['values']['displayname']."'";
+		$entry['command'] .= $form_state['values']['mailquota'] == ''?'':' zimbraMailQuota  \''.($form_state['values']['mailquota']*1048576)."'";
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		$entry['ip'] = zaas_getIPFromDomain($form_state['values']['domains']);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($form_state['values']['domains'],$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		$quota_num = $quota;
+		if( $quota_num == 0) {
+			drupal_set_message('Out of quota to create new mailbox','error');
+			return;
+		}
+		else {
+			if( $quota_num > 0 ) {
+				// subtract 1 and save to DB
+				 $quota =  $quota_num - 1;
+				 $entry2 = array();
+				 $entry2['quota'] = $quota;
+				 db_update('zmdomain')
+							->fields($entry2)
+							->condition('domain', $form_state['values']['domains'])
+							->execute();
+			}
+			// else // minus number ( <0 ) : unlimit create
+		}
+		//die;
+		
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'delete' ) {
+			global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'da '.$form_state['values']['domain'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['domain']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+}
+
+function zaas_zimbra_mailbox($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager Mailbox.') . '</h1><p>' . t('This page for domain manager manages his domain and mailbox.') . '</p>';
+	$str .= '<h3>Welcome user '.$username.'</h3>';
+	$domains = zaas_getDomainFromUser();
+	if( empty($domains) ) die('You Have No permission. Please ask the Administrator!');
+	$command_list = array();
+	foreach( $domains as $kkk=>$domain) {
+		$command_list[$kkk]['command'] = '-l gaa '.$domain;
+		$command_list[$kkk]['ip'] = zaas_getIPFromDomain($domain);
+	}
+	if(  $type == 'edit') {
+			 list($action,$displayName) = explode('@@',$action);
+			// display form input
+			$acc = explode('@',$action);
+			$form['username'] = array(
+				'#type' => 'textfield',
+				'#description' => t('without @'), 
+				'#default_value'=> $acc[0],
+				'#title' => t('Edit name of account ').$action,
+			);
+			$list_ = array();
+			foreach($domains as $kkk=>$domain) {
+				$list_ [$domain] = '@'.$domain;
+			}
+			 $form['domains'] = array(
+				'#type' => 'select', 
+				'#title' => t('Choose domain for your account'), 
+				'#default_value' => $acc[1], 
+				'#options' => $list_,
+			);
+			$form['displayname'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $displayName,
+				'#title' => t('Display name '),
+			);
+			$form['password'] = array(
+				'#type' => 'password',
+				'#title' => t('Change Password (leave blank if not change)'),
+			);
+			$form['mailquota'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Update Mailbox quota '),
+				'#description' => t('in MB, for example 100 = 100MB'), 
+			);
+			$form['domain'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'edit',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Save Edit'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'create') {
+  
+			$form['username'] = array(
+				'#type' => 'textfield',
+				  '#description' => t('without @'), 
+				'#title' => t('Create name of account '),
+			);
+			$list_ = array();
+			foreach($domains as $kkk=>$domain) {
+				$list_ [$domain] = '@'.$domain;
+			}
+			 $form['domains'] = array(
+				'#type' => 'select', 
+				'#title' => t('Choose domain for your account'), 
+				'#default_value' => 'Titles plus teaser',
+				'#options' => $list_,
+			);
+			$form['displayname'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Display name '),
+			);
+			$form['mailquota'] = array(
+				'#type' => 'textfield',
+				'#description' => t('in MB, for example 100 = 100MB'), 
+				'#title' => t('Mailbox quota '),
+			);
+			$form['password'] = array(
+				'#type' => 'password',
+				'#title' => t('Password of account (>=6 characters) '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'create',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Create'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'delete') {
+		$form['domain'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'delete',
+			);
+		$form['submit'] = array(
+				'#value' => t('Confirm delete account: ').$action,
+				'#type' => 'submit',
+				);
+		return $form;
+	}
+	else if(  $type == 'update') {
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		foreach( $command_list as $cmd ) {
+			$entry['command'] = $cmd['command'];
+			$entry['ip'] = $cmd['ip'];
+			if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+			if( !in_array($domain,$domains) ) {
+				drupal_set_message('Error domain account. This domain is not belong to you!','error');
+				return False;
+			}
+			db_insert('zmcommand')
+	                    ->fields($entry)
+	                    ->execute();
+  	}
+        $str = '<h1>' . t('Just updated, please wait until it is processed.') . '</h1>';
+	}
+	else {
+		foreach( $command_list as $cmd ) {
+			$select = db_select('zmcommand', 'c')
+				->fields('c')
+				->condition('command', $cmd)
+				->orderBy('id', 'DESC')
+				->execute();
+			$rs2 = $select->fetchAll();
+			if( !empty($rs2) ) if(isset($rs)) $rs[] = $rs2[0]; else $rs[0] = $rs2[0];
+		}
+		if ( empty($rs) ) $str .= '<br>No account list. Click UPDATE link to update list.';
+		$str .= t('<br><a href="@simple_link">Update list now</a> ',array('@simple_link' => url('zimbra/admin/mailbox/update/', array('absolute' => TRUE)) ) );
+		if ( !empty($rs) ) {
+			$str .= '<table border=0><tr><td>ID</td><td>Account</td><td>displayName</td><td>Domain</td><td>Edit</td><td>Delete</td></tr>';
+			$i = 1;
+			
+			foreach ($rs as $r ) {
+		//	$r = $rs[0];
+				$arr = $r->result;
+				$arrs = array_filter(explode("#",$arr));
+				foreach ($arrs as $value) {
+					$values = array_filter(explode("\n",$value));
+					$value = str_replace('name ','',$values[0]);
+					list( $username,$domain) = explode('@',$value);
+					if (isset($values[1]) && !empty($values[1]) ) $displayName = str_replace('displayName: ','',$values[1]);
+					else $displayName = '';
+					//
+					$str .= t('<tr><td>'.$i.'</td><td>'.$value.'<td>'.$displayName.'</td><td>'.$domain.'</td><td><a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+							array('@simple_link' => url('zimbra/admin/mailbox/edit/'.$value.'@@'.$displayName, array('absolute' => TRUE)),
+								    '@simple_link2' => url('zimbra/admin/mailbox/delete/'.$value, array('absolute' => TRUE)) ) 
+							
+							);
+					
+					$i++;
+				}
+				
+			}
+			$str .= '</table>';
+		}
+  	}
+  return array('#markup' => $str);
+}
+############################ END  MAIL BOX   ######################################
+
+
+
+############################  MAIL ALIAS   ######################################  
+function zaas_zimbra_alias_submit($form, $form_state) {
+	$domains = zaas_getDomainFromUser();
+	global $user;
+	$username = $user->name;
+	if( $form_state['values']['typeaction'] == 'edit' ) {
+		$acc = explode('@',$form_state['values']['username']);
+		if( !in_array($acc[1],$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		$acc = explode('@',$form_state['values']['alias']);
+		if( !in_array($acc[1],$domains) ) {
+			drupal_set_message('Error domain alias. This domain is not belong to you!','error');
+			return False;
+		}
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'raa '.$form_state['values']['username'].' '.$form_state['values']['alias_old'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['username']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+    $entry['command'] = 'aaa '.$form_state['values']['username'].' '.$form_state['values']['alias'];      
+ 		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+ 
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'create' )  {
+		$entry = array();
+		$entry['user'] = $username;
+		$acc = explode('@',$form_state['values']['username']);
+		if( !in_array($acc[1],$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you! Or it is not created','error');
+			return False;
+		}
+		$acc = explode('@',$form_state['values']['alias']);
+		if( !in_array($acc[1],$domains) ) {
+			drupal_set_message('Error domain alias. This domain is not belong to you!','error');
+			return False;
+		} 
+		$entry['command'] = 'aaa '.$form_state['values']['username'].' '.$form_state['values']['alias'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['alias']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'delete' ) {
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'raa '.$form_state['values']['username'].' '.$form_state['values']['alias'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['alias']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+}
+
+function zaas_zimbra_alias($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager alias.') . '</h1><p>' . t('This page for domain manager manages his domain and alias.') . '</p>';
+	$str .= '<h3>Welcome user '.$username.'</h3>';
+	//$command_list = 'alias -l gaa '.zaas_getDomainFromUser();
+	$domains = zaas_getDomainFromUser();
+	if( empty($domains) ) die('You Have No permission. Please ask the Administrator!');
+	$command_list = array();
+	foreach( $domains as $kkk=>$domain) {
+		$command_list[$kkk]['command'] = 'alias -l gaa '.$domain;
+		$command_list[$kkk]['ip'] = zaas_getIPFromDomain($domain);
+	}
+	if(  $type == 'edit') {
+			 list($action,$displayName) = explode('@@',$action);
+			// display form input
+			$form['username'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $action,
+				'#title' => t('Form account ').$action,
+			);
+			$form['alias'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $displayName,
+				'#title' => t('Alias '),
+			);
+			$form['alias_old'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $displayName,
+				'#title' => t('Alias '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'edit',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Save Edit'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'create') {
+			$form['username'] = array(
+				'#type' => 'textfield',
+				'#title' => t('From account: '),
+			);
+			$form['alias'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Create name of Alias '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'create',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Create'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'delete') {
+		list($action,$alias) = explode('@@',$action);
+		$form['username'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['alias'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $alias,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'delete',
+			);
+		$form['submit'] = array(
+				'#value' => t('Confirm delete alias: ').$action.' of account: '.$alias,
+				'#type' => 'submit',
+				);
+		return $form;
+	}
+	else if(  $type == 'update') {
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		foreach( $command_list as $cmd) {
+			$entry['command'] = $cmd['command'];
+			$entry['ip'] = $cmd['ip'];
+			db_insert('zmcommand')
+	                    ->fields($entry)
+	                    ->execute();
+   }
+        $str .= '<h1>' . t('Just updated, please wait until it is processed.') . '</h1>';
+	}
+	else {
+	//for i in `zmprov gaa`; do echo ""; echo "$i:"; zmprov ga $i | grep MailAlias; done > acounts.txt
+		foreach( $command_list as $cmd) {
+			$select = db_select('zmcommand', 'c')
+				->fields('c')
+				->condition('command', $cmd)
+				->orderBy('id', 'DESC')
+				->execute();
+			$rs2 = $select->fetchAll();
+			if( !empty($rs2) ) if(isset($rs)) $rs[] = $rs2[0]; else $rs[0] = $rs2[0];
+			
+		}
+		$str .= t('<br><a href="@simple_link">Update list now</a> ',array('@simple_link' => url('zimbra/admin/alias/update/', array('absolute' => TRUE)) ) );
+		if ( empty($rs) ) {
+		$str .= '<br>No account list. Click UPDATE link to update list.';
+		return  array('#markup' => $str);
+		}
+		if ( !empty($rs) ) {
+			$str .= '<table border=0><tr><td>ID</td><td>Account</td><td>Alias</td><td>Edit</td><td>Delete</td></tr>';
+			$i = 1;
+			//echo '<pre>';
+			foreach ($rs as $r ) {
+			 	//$r = $rs[0];
+				$arr = trim($r->result);
+//				$arrs = array_filter(explode("#",$arr));
+//				foreach ($arrs as $value) {
+					$values = explode("\n\n",$arr);
+				//	print_r($values);
+					foreach ($values as $value2) {
+					$values2 = array_filter(explode("\n",$value2));
+					$n_n = count($values2);
+					if( $n_n <= 1 ) continue;
+					else {
+						$acc  = str_replace(':','',trim($values2[0]));
+						for($ij = 1;$ij < $n_n;$ij++) {
+						$value = $values2[$ij];
+						//echo $value.'<br>';
+						if ( strpos($value,'zimbraMailAlias: ') !== false ) {
+							$displayName = str_replace('zimbraMailAlias: ','',$value);
+							$str_a = t('<a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+										array('@simple_link' => url('zimbra/admin/alias/edit/'.$acc.'@@'.$displayName, array('absolute' => TRUE)),
+									    '@simple_link2' => url('zimbra/admin/alias/delete/'.$acc.'@@'.$displayName, array('absolute' => TRUE)) )
+				    					);
+							
+						}
+						//
+						$str .= t('<tr><td>'.$i.'</td><td>'.$acc.'<td>'.$displayName.'</td><td>').$str_a;
+						
+						$i++;
+						}
+					}
+					}
+//				}
+				
+			}
+			$str .= '</table>';
+		}
+  	}
+  return array('#markup' => $str);
+}
+############################ END  ALIAS   ######################################
+
+
+
+############################ GROUP   ######################################  
+function zaas_zimbra_group_submit ($form, $form_state) {
+	$domains = zaas_getDomainFromUser();
+	if( $form_state['values']['typeaction'] == 'edit' ) {
+		
+		global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['group']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+    $entry['command'] = 'rdl '.$form_state['values']['group_old'].' '.$form_state['values']['group'];      
+ 		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+ 
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'create' )  {
+		global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'cdl '.$form_state['values']['group'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['group']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'delete' ) {
+			global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'ddl '.$form_state['values']['group'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['group']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'add_email' ) {
+			global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'adlm '.$form_state['values']['group'].' '.$form_state['values']['email'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');		//2009-04-16 04:13:26
+		list($acc_n,$domain) = explode('@',$form_state['values']['group']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+	else if( $form_state['values']['typeaction'] == 'remove_email' ) {
+			global $user;
+		$username = $user->name;
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['command'] = 'rdlm '.$form_state['values']['group'].' '.$form_state['values']['email'];
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$form_state['values']['group']);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		if( !in_array($domain,$domains) ) {
+			drupal_set_message('Error domain account. This domain is not belong to you!','error');
+			return False;
+		}
+		db_insert('zmcommand')
+                    ->fields($entry)
+                    ->execute();
+		drupal_set_message('Create command suceessful. Please wait until It is processed completed!');
+	}
+}
+
+function zaas_zimbra_group($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager Group.') . '</h1><p>' . t('This page for domain manager manages group.'). '</p>';
+	$str .= '<h3>Welcome user '.$username.'</h3>';
+	//$command_list = 'alias -l gaa '.zaas_getDomainFromUser();
+	$domains = zaas_getDomainFromUser();
+	if( empty($domains) ) die('You Have No permission. Please ask the Administrator!');
+	$command_list = array();
+	foreach( $domains as $kkk=>$domain) {
+		$command_list[$kkk]['command'] = 'gadl '.$domain;
+		$command_list[$kkk]['ip'] = zaas_getIPFromDomain($domain);
+		if( $command_list[$kkk]['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+	}
+	if(  $type == 'edit') {
+			// display form input
+			$form['group'] = array(
+				'#type' => 'textfield',
+				'#default_value'=> $action,
+				'#title' => t('Rename Group '),
+			);
+			$form['group_old'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+				'#title' => t('Alias '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'edit',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Save Edit'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'create') {
+			$form['group'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Group name: '),
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'create',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Create'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'add_email') {
+			//list($action,$alias) = explode('@@',$action);
+			$form['email'] = array(
+				'#type' => 'textfield',
+				'#title' => t('Add email: '),
+			);
+			$form['group'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'add_email',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Add an email'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'remove_email') {
+			list($group,$email) = explode('@@',$action);
+			$form['email'] = array(
+				'#type' => 'hidden',
+				'#title' => t('Group name: '),
+				'#default_value'=> $email,
+			);
+			$form['group'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $group,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'remove_email',
+			);
+			$form['submit'] = array(
+				//  '#name' => 'finish',
+				'#value' => t('Confirm to remove'),
+				'#type' => 'submit',
+				//  '#submit' => array('zaas_admin_server_create_form_submit'),
+				);
+			return $form;
+	}
+	else if(  $type == 'delete') {
+			$form['group'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> $action,
+			);
+			$form['typeaction'] = array(
+				'#type' => 'hidden',
+				'#default_value'=> 'delete',
+			);
+		$form['submit'] = array(
+				'#value' => t('Confirm delete group: ').$action,
+				'#type' => 'submit',
+				);
+		return $form;
+	}
+	else if(  $type == 'update') {
+		$entry = array();
+		$entry['user'] = $username;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		foreach( $command_list as $cmd) {
+			$entry['command'] = $cmd['command'];
+			$entry['ip'] = $cmd['ip'];
+			db_insert('zmcommand')
+	                    ->fields($entry)
+	                    ->execute();
+   }
+        $str .= '<h1>' . t('Just updated, please wait until it is processed.') . '</h1>';
+        return  array('#markup' => $str);
+	}
+	else if(  $type == 'update_email_list') {
+		$entry = array();
+		$command_list2 = array();
+		$entry['user'] = $username;
+		$entry['status'] = '0';$entry['created'] = date('Y')."-".date('m')."-".date('d')." ".date('H')."-".date('i')."-".date('s');
+		list($acc_n,$domain) = explode('@',$action);
+		$entry['ip'] = zaas_getIPFromDomain($domain);
+		if( $entry['ip'] == FALSE ) die('Server IP missing: '.$domain.'. Please ask your Administrator');
+		$entry['command'] = 'gdl '.$action.' | grep zimbraMailForwardingAddress: | awk {\'print $2\'}'; //zmprov gdl mailinglist@example.com | grep zimbraMailForwardingAddress: | awk {'print $2'}
+			db_insert('zmcommand')
+	                    ->fields($entry)
+	                    ->execute();
+        $str = '<h1>' . t('Just updated, please wait until it is processed.') . '</h1>';
+        $str .= t('<br><a href="@simple_link">Back to List page</a> ',array('@simple_link' => url('zimbra/admin/group/list_email/'.$action, array('absolute' => TRUE)) ) );
+        return  array('#markup' => $str);
+	}
+	else if (  $type == 'list_email'){
+		$cmd = 'gdl '.$action.' | grep zimbraMailForwardingAddress: | awk {\'print $2\'}';
+	//for i in `zmprov gaa`; do echo ""; echo "$i:"; zmprov ga $i | grep MailAlias; done > acounts.txt
+			$select = db_select('zmcommand', 'c')
+				->fields('c')
+				->condition('command', $cmd)
+				->orderBy('id', 'DESC')
+				->execute();
+			$rs = $select->fetchAll();
+
+		$str .= t('<br><a href="@simple_link">Update list now</a> ',array('@simple_link' => url('zimbra/admin/group/update_email_list/'.$action, array('absolute' => TRUE)) ) );
+		if ( empty($rs) ) {
+		$str .= t('<br>No account list. Click UPDATE link to update list.');
+			return  array('#markup' => $str);
+		
+		}
+		if ( !empty($rs) ) {
+			$str .= '<h1>Group: '.$action.'</h1>';
+			$str .= t('<br /><a href="@simple_link">Add email to this group</a><br />',
+										array('@simple_link' => url('zimbra/admin/group/add_email/'.$action, array('absolute' => TRUE))) );
+			$str .= '<table border=0><tr><td>ID</td><td>Group Name</td><td>Delete</td></tr>';
+			$i = 1;
+			//echo '<pre>';
+		//	foreach ($rs as $r ) {
+			 	$r = $rs[0];
+				$arr = trim($r->result);
+//				$arrs = array_filter(explode("#",$arr));
+//				foreach ($arrs as $value) {
+					$values = array_filter(explode("\n",$arr));
+				//	print_r($values);
+					foreach ($values as $value2) {
+						$str_a = t('<a href="@simple_link2">Delete</a></td></tr>',
+										array( '@simple_link2' => url('zimbra/admin/group/remove_email/'.$action.'@@'.$value2, array('absolute' => TRUE)) )
+				    					);
+						
+						$str .= t('<tr><td>'.$i.'</td><td>'.$value2.'</td><td>' ).$str_a;
+						
+						$i++;
+					}
+//				}
+				
+			//}
+			$str .= '</table>';
+		}
+  	}
+  	else {
+	//for i in `zmprov gaa`; do echo ""; echo "$i:"; zmprov ga $i | grep MailAlias; done > acounts.txt
+		foreach( $command_list as $cmd) {
+			$select = db_select('zmcommand', 'c')
+				->fields('c')
+				->condition('command', $cmd)
+				->orderBy('id', 'DESC')
+				->execute();
+			$rs2 = $select->fetchAll();
+			if( !empty($rs2) ) if(isset($rs)) $rs[] = $rs2[0]; else $rs[0] = $rs2[0];
+			
+		}
+		$str .= t('<br><a href="@simple_link">Update list now</a> ',array('@simple_link' => url('zimbra/admin/group/update/', array('absolute' => TRUE)) ) );
+		if ( empty($rs) ) {
+		$str .= '<br>No account list. Click UPDATE link to update list.';
+		return  array('#markup' => $str);
+		}
+		if ( !empty($rs) ) {
+			$str .= '<table border=0><tr><td>ID</td><td>Group Name</td><td>Edit</td><td>Delete</td></tr>';
+			$i = 1;
+			//echo '<pre>';
+			foreach ($rs as $r ) {
+			 	//$r = $rs[0];
+				$arr = trim($r->result);
+//				$arrs = array_filter(explode("#",$arr));
+//				foreach ($arrs as $value) {
+					$values = array_filter(explode("\n",$arr));
+				//	print_r($values);
+					foreach ($values as $value2) {
+						$str_a = t('<a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+										array('@simple_link' => url('zimbra/admin/group/edit/'.$value2, array('absolute' => TRUE)),
+									    '@simple_link2' => url('zimbra/admin/group/delete/'.$value2, array('absolute' => TRUE)) )
+				    					);
+						
+						$str .= t('<tr><td>'.$i.'</td><td><a href="@simple_link">'.$value2.'</a></td><td>',
+										array('@simple_link' => url('zimbra/admin/group/list_email/'.$value2, array('absolute' => TRUE))) ).$str_a;
+						
+						$i++;
+					}
+//				}
+				
+			}
+			$str .= '</table>';
+		}
+  	}
+  return array('#markup' => $str);
+}
+
+############################ END  GROUP   ######################################
+
+
+############################  COMMAND RESULT   ######################################
+function zaas_zimbra_command($form, $form_state,$type='',$action='') {
+	global $user;
+	$username = $user->name;
+	$str = '<h1>' . t('Manager Command Report and Status.') . '</h1><p>' . t('This page for domain manager manages his command and status.') . '</p>';
+	$str .= '<h3>Welcome user '.$username.'</h3>';
+	if(  $type == 'delete') {
+		$num_deleted = db_delete('zmcommand')
+			->condition('id', $action)
+			->execute();
+		drupal_set_message(t('Delete Successful ID: '.$action));
+	}
+	else if(  $type == 'update') {
+		list($id,$status) = explode('@',$action);
+		$entry = array();
+		$entry['status'] = $status;
+		db_update('zmcommand')
+			->fields($entry)
+			->condition('id', $id)
+			->execute();
+        drupal_set_message('Update suceessful.');
+	}
+	if(!user_access('super admin page') ) {
+		$select = db_select('zmcommand', 'c')
+					->fields('c')
+					->condition('user', $username)
+					->orderBy('id', 'DESC')
+					->execute();
+	}
+	else $select = db_select('zmcommand', 'c')
+					->fields('c')
+					->orderBy('id', 'DESC')
+					->execute();
+	$rs = $select->fetchAll();
+	if ( !empty($rs) ) {
+		$str .= '<table border=0><tr><td>ID</td><td>User</td><td>Command</td><td>Status</td><td>Date Set</td><td>Date receive</td><td>Stop/Enable</td><td>Delete</td></tr>';
+		$i = 1;
+		$status = array(0=>'Waiting',1=> 'Done',2=>'Processing',3=>'Disable');
+		foreach ($rs as $r ) {
+	//	$r = $rs[0];
+			$arr = $r->result;
+			if( $r->status == '3') $s = t('<a href="@simple_link">Enable</a>',array('@simple_link' => url('zimbra/admin/command/update/'.$r->id.'@0', array('absolute' => TRUE))) );
+			else if( $r->status == '0') $s = t('<a href="@simple_link">Disable</a>',array('@simple_link' => url('zimbra/admin/command/update/'.$r->id.'@3', array('absolute' => TRUE))) );
+			else $s = 'Nothing';
+				$str .= t('<tr><td>'.$i.'</td><td>'.$r->user.'</td><td>'.$r->command.'</td><td>'.$status[$r->status].'</td><td>'.$r->created.'</td><td>'.$r->received.'</td><td>'.$s.'</td><td><a href="@simple_link2">Delete</a></td></tr>',
+						array('@simple_link2' => url('zimbra/admin/command/delete/'.$r->id, array('absolute' => TRUE)) )  );
+				
+				$i++;
+			
+		}
+		$str .= '</table>';
+	}
+	else $str .= 'No command.';
+  return array('#markup' => $str);
+}
+############################ END  COMMAND RESULT   ######################################
+
+function zaas_getDomainFromUser($username = '') {
+	if ($username == '') {
+		global $user;
+		$username = $user->name;
+	}
+	if( user_access('super admin page') ) {
+		$select = db_select('zmdomain', 'c')
+			->fields('c')
+			->execute();
+	}
+	else if( user_access('access admin page') ) {
+		$select = db_select('zmdomain', 'c')
+			->fields('c')
+			->condition('tenant', $username)
+			->execute();
+	}
+	else if( user_access('access zimbra page') ) {
+		$select = db_select('zmdomain', 'c')
+			->fields('c')
+			->condition('domainmanager', $username)
+			->execute();
+	}
+		$rs = $select->fetchAll();
+		if( empty($rs) ) return array();
+		//$r = $rs[0];
+		$arr = array();
+		foreach( $rs as $r) {
+			$arr[] = $r->domain;
+		}
+		return $arr;//array_values(array_filter(explode(',',$r->domain)));
+}
+
+function zaas_getIPFromDomain($domain) {
+	if ($domain == '') {
+		return FALSE;
+	}
+		$select = db_select('zmdomain', 'c')
+			->fields('c')
+			->condition('domain', $domain)
+			->execute();
+		$rs = $select->fetchAll();
+		if( empty($rs) ) return FALSE;
+		$r = $rs[0];
+		return $r->ip;
+}
+function zaas_getServer() {
+		$select = db_select('zmpasskey', 'c')
+			->fields('c')
+			->condition('status', 1)
+			->execute();
+		$rs = $select->fetchAll();
+		if( empty($rs) ) return FALSE;
+		$arr = array();
+		foreach($rs as $r) {
+			$arr[$r->ip] = $r->ip;
+		}
+		return $arr;
+}
