@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Menu</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Home</a><br /></li>
+	
+	<li><a href='intro.html'>Introduction </a><br /></li>
+	<li><a href='download.html'>Download </a><br /></li>
+	<li>Help and Support <ul>
+		<li><a href='install.html'>Install</a><br /></li>
+	<li><a href='config.html'>Configuration</a><br /></li>
+	<li><a href='guide.html'>Usage guide </a><br /></li>
+	<li><a href='security.html'>Security </a><br /></li>
+	<li><a href='faq.html'>FAQ </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>About </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>ZaaS configurations</h3>
+<hr>
+<br /><br />Ok, now we will set new setting.
+<br />Roles: From Management menu, choose Administration -> Modules -> Click Permissions -> Click Roles
+<br />Add 3 roles: Tenant, Domain manager, SuperAdmin. You MUST create Extractly name. You should copy paste!
+<br />Ok, now Click Permissions ( belower link), find Zaas setting division.
+<br />You will see 3 permissions: Access admin page, Access zimbra page, Supper Admin manages page:
+	<ul><li>Access admin page: Allow <b>Tenant and super Admin</b></li>
+	<li>Access zimbra page: Allow <b>domain admin</b> manages own domain</li>
+	<li>Supper Admin manages page: Allow <b>SUPER admin</b> manages domains and servers</li></ul>
+<br />Choose the same in this picture and click Save permissions
+<br /><img src='../files/permission.png' width=450px>
+<br />Congratulation, you have done all settings. Now we keep going.
+<br />
+
+<br /><b>Zimbra server</b>
+<br />Simply, Config phpchecker file ( edit phpchecher.php file) and set some settings:
+<pre>
+$urli = 'hlp007.com';		// URL of Drupal Server
+$url = '/dp/';			// path / drupal/ in / Drupal Server
+$secret = '123456az';	// Key pass when connect to Drupal server
+$domain = 'zaasmhst.com,';	// Domain of this server
+$server = '119.15.161.24';	// Name of this server
+</pre>
+<br /> In this tool, I use HttpClient as browser to connect to Drupal server.
+<br /> You must install PHP to compile this code. If You want to test via browser,you must install Web server (Apache) with PHP support, and copy to htdocs
+<br /> To check, run phpchecker in browser, If you see "No command. Return", It's mean server run well.
+<br />
+<br /> If You want to test via browser, the Webserver, in this server I use Apache, under ROOT permission, because We need to call function belong to zimbra user. Open the httpd.conf file and find the User, Group lines to edit:
+<pre>
+User <b>root</b>
+Group <b>root</b>
+</pre>
+<br /><b>Schedule</b>
+<br /> Ok, now set cron job for phpchecker.
+<br /> edit crontab
+<pre>
+crontab -e
+
+*/2 * * * * root php /var/www/html/phpchecker.php
+</pre>
+<br />*/2 : Time in minute. */2 = every minute.
+<br />root : user run this cript (because We need to call function belong to zimbra user).
+<br />php : command execute.
+<br />/var/www/html/phpchecker.php: address to phpchecker file
+</div>
+</body>
+</html>

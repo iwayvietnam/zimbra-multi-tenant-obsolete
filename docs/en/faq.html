@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Menu</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Home</a><br /></li>
+	<li><a href='intro.html'>Introduction </a><br /></li>
+	<li><a href='download.html'>Download </a><br /></li>
+	<li>Help and Support <ul>
+		<li><a href='install.html'>Install</a><br /></li>
+	<li><a href='config.html'>Configuration</a><br /></li>
+	<li><a href='guide.html'>Usage guide </a><br /></li>
+	<li><a href='security.html'>Security </a><br /></li>
+	<li><a href='faq.html'>FAQ </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>About </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>Frequently Asked Questions</h3>
+<hr>
+List FQA:<br />
+<br>
+<h3> How does the ZaaS run?</h3>
+<hr>
+It will explain how the ZaaS run.<br />
+First, You need install and config ( copy a phpchecker file to Zimbra server, set crontab (scheduling) to run this php file.<br />
+You need to configurate some settings: Address Zimbra, own IP, and password key for transaction.<br />
+Next, You have to install Drupal CMS (if you have not install already), Install Module: zaasmhst and enable it. <br />
+After that, create new roles and assign new permission to your users ( which have suffix name is domain name, for example : admin@zaasmhst.com.
+When done, Create new server connection with IP, passkey is same in your Zimbra server.
+<br /><b>When you create a command to Zimbra service, It takes some time to get from Drupal CMS and execute it.  </b>
+<br /><font color=red>Your created command is saved in Database of Drupal CMS. Schedulerly, Zimbra server will connect to Zimbra server to get command.</font>
+<br />
+<h3> How about other ways to execute commands?</h3>
+<hr>
+<br /> Of cause, We have another way to execute commands.
+<br /> There are 2 way to execute: run indirectly (like this version) and run directly. So what is "run directly"? It means that the command you created is executed immediately by Zimbra server.
+<br />By that way, Drupal needs to contact directly to Zimbra Server, and sends the command to it. So you nearly need not time for waiting. But what about its disadvantages?
+<br />First, If you have some mistake in commands, you can not delay or pause.
+<br />
+<h3> How many type (roles) Users and what can I do with those roles?</h3>
+<hr>
+<br />This tool uses 3 Roles to control. There are: Super Admin (highest permission), Tenant and Domain manager.
+<br />Super Admin: is user can control the system, create/stop Connections between Drupal and Zimbra server. Often this user is root account of Drupal CMS. He can assign domains management to Tenants.
+<br />Tenant: is higher permission. This user can only create Domain managers which belong to his domain(s). And he can manage all mailbox, alias, group which domain he assigned.
+<br />Domain manager: is base user. He only manage ONE domain which belong to him, no more. He can create Mailbox, Alias and Group.
+<br />
+<br />
+<h3> What is different User Accounts between Drupal and Zimbra server?</h3>
+<hr>
+<br />You will see there is no relationship between Drupal and Zimbra server. You must create 2 account in same time. But according to notion, You should create Drupal user account is same user in Zimbra server (the mailbox name - email).
+<br />
+
+<h3> Must I create new Drupal user account in form like email - @company.com ?</h3>
+<hr>
+<br />As I said before, In notion, you should create new Drupal user account in form like Zimbra - email form such as user1@company.com
+It is easy to read comprehensiblely and manage. You would know who is he, where he belongs.
+Of cause, You can create a normal account name, none email form.
+<br />
+<br />
+
+</div>
+</body>
+</html>

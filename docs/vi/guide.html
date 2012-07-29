@@ -1,0 +1,120 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Danh mục</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Trang chủ</a><br /></li>
+	
+	<li><a href='intro.html'>Giới thiệu </a><br /></li>
+	<li><a href='download.html'>Tải phần mềm </a><br /></li>
+	<li>Trợ giúp và giúp đỡ <ul>
+		<li><a href='install.html'>Cài đặt</a><br /></li>
+	<li><a href='config.html'>Thiết đặt</a><br /></li>
+	<li><a href='guide.html'>Hướng dẫn sử dụng </a><br /></li>
+	<li><a href='security.html'>Bảo mật </a><br /></li>
+	<li><a href='faq.html'>Các câu hỏi </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>Về phần mềm </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>Hướng dẫn sử dụng ZaaS</h3>
+<hr>
+<br />Sau khi thiết đặt xong cho Zimbra server và Drupal CMS ( Tạo các user mới: tenant hay domain manager), và các kết nối mới (gồm IP, mật khẩu) thành công, chúng ta bắt đầu làm việc với ZaaS. ZaaS có những tính năng tương ứng với mỗi kiểu user.
+<br /><ul>
+	<li>SuperAdmin<ul>
+	<li><a href='#mc'>Manage Server connections - Quản lý kết nối</a></li>
+	<li><a href='#mt'>Manage Tenant - Quản lý Tenant</a></li>
+	</ul>
+	<br /></li>
+	<li>Tenant<ul>
+	<li><a href='#md'>Manage Domain manager - Quản lý Domain manager</a></li>
+	</ul>
+	<br /></li>
+	<li>Domain manager <ul>
+	<li><a href='#cs'>Command status - Trạng thái lệnh</a></li>
+	<li><a href='#mm'>Manage MailBox - Quản lý hộp thư</a></li>
+	<li><a href='#ma'>Manage Alias - Quản trị Alias</a></li>
+	<li><a href='#mg'>Manage Group - Quản trị Group</a></li>
+	</ul><br /></li>
+	</ul>
+<br />
+<hr>
+<h3><u>SuperAdmin</u></h3>
+<h4><a  name='mc'>Manage Server connections - Quản lý kết nối</a></h4>
+<br /> Một Zimbra server muốn truy cập tới CMS Drupal này để lấy lệnh, cần phải vượt qua được kiểm tra mật khẩu và IP
+<br />Và một lệnh được tạo bởi Drupal cần xác định được IP của máy chủ Zimbra để trả lệnh.
+<br />Mỗi domain cần xác định ứng với mỗi IP và mật khẩu, ví dụ:
+<br /><img src='../files/manager_server.png' />
+<br />Để tạo mới, nhấn vào Create New Servers Connection, và nhập vào IP, domain, passkey.
+<br />Để sửa, nhấn vào IP link.
+<br />Để xóa, nhấn vào Delete link trong cùng hàng.
+<br />
+<h4><a  name='mt'>Manage Tenant - Quản lý Tenant</a></h4>
+<br /> Sau khi tạo một kết nối tới server. Việc tiếp theo là ta tạo ra các Tenant. Tenant sẽ là người quản lý 1 nhóm các domain nào đó, do tự Tenant đó quản lý. Ví dụ tạo mới 1 tenant:
+<br /><img src='../files/manage_tenant.png' />
+<br />Chọn tên cần tạo cho Tenant. Nếu trong Drupal có sẵn tài khoản này rồi thì ZaaS sẽ không tạo user mới. Nếu chưa có, mật khẩu sẽ là cần thiết để tạo mới user. Sau đó, user này sẽ được chọn IP mặc định để chạy các dịch vụ mail trên đó. Và cuối cùng là số lượng domain mà Tenant này có thể tạo mới ra.
+<br />
+<br />
+<h3><u>Tenant</u></h3>
+<h4><a  name='md'>Manage Domain manager - Quản lý Domain manager</a></h4>
+<br /><b>Công cụ này dùng để Tenant gán quyền quản lý 1 domain cho Domain manager</b>.
+<br />Tenant có thể tạo Domain managers - người mà điều khiển với domain nào và định mức bao nhiêu (số lượng mailbox được tạo ra).
+<br />Sau khi được Super Admin tạo tài khoản, Tenant đăng nhập và sẽ thấy có chức năng này trong menu.
+<br />Domain manager ko có quyền truy cập tới trang này!
+<br />Dưới đây là form mới để gán quyền cho user 
+<br /><img src='../files/manage_DM.png' /><br />
+<ul><li>"Create name of Domain manager ( without @ )": Tên của account bạn muốn gán domain. Nếu trong Drupal có sẵn tài khoản này rồi thì ZaaS sẽ không tạo user mới. Nếu chưa có, mật khẩu sẽ là cần thiết để tạo mới user. Chú ý ko có @, username sẽ tự động thêm dạng ten@domain.</li>
+<li>"Assign domain for this server and Domain manager": domain mà bạn muốn account này quản lý. Nếu hệ thống Zimbra chưa có sẵn, sẽ tự động thêm vào danh sách domain trên server đó!</li>
+<li>"Assign IP server for your domain": IP (server) mà domain Tenant muốn chạy. </li>
+<li>"Mailbox number can create for this Domain manager": Số lượng mailbox mà user này có thể tạo ra được</li>
+</ul>
+<br />
+<br />
+<h3><u>Domain manager</u></h3>
+<h4><a  name='cs'>Command status - Trạng thái lệnh</a></h4>
+<br />Công cụ này hiển thị các lệnh mà user đó đã tạo ra, như tạo, xóa, sửa,... Gồm cả các lệnh chưa thực thi và đã thực thi.
+<br />Ở đây sẽ liệt kê tất cả các lệnh trong CSDL. Có vài kiểu lệnh, với các trạng thái như:
+<ul><li>Waiting: vẫn đang chờ để gửi tới Zimbra server, nghĩa là nó vẫn chưa được thực thi.</li>
+<li>Processing: Zimbra server đã nhận được lệnh, và đang thực thi nó</li>
+<li>Done: Nghĩa là lệnh đã được thực thi xong!</li></ul>
+<br />Xem ảnh để biết thêm các chi tiết:
+<br /><img src='../files/command_status.png' />
+<br />Như vậy, nếu lệnh vẫn trong trạng thái là waiting, thì bạn có thể Ngừng nó, hay xóa nó nếu bạn ko muốn nó thực thi, và có thể Cho phép tiếp tục sau khi đã ngừng!
+<br />
+<h4><a  name='mm'>Manage MailBox - Quản lý hộp thư</a></h4>
+<br />Hộp thư hay tài khoản, là nơi mà người dùng sẽ nhận và gửi thư.
+<br />Lần đầu tiên sử dụng, bạn cần cập nhật nó (hay khi bạn muốn làm mới), nhấn vào Update List Mailbox, và chờ máy chủ zimbra thực thi lệnh này. Nó sẽ liệt kê tất cả các tài khoản mà domain thuộc quyền của bạn (Tenant hay Domain manager user).
+<br />Bạn sẽ thấy "Just updated, please wait until it is processed.", và chờ khoảng 1 vài phút, rồi bấm link trở lại Manager Mailbox, bạn sẽ thấy tất cả tài khoản của bạn.
+<br />Để tạo mới, nhấn Create New Mailbox, rồi chọn domain mà bạn sở hữu. Bạn có thể đặt 1 số thông tin cơ bản như Tên hiển thị, mật khẩu, định mức hòm thư.
+<br />Nếu bạn muốn sửa/ xóa thì nhấn vào link edit/delete. Sau khi xác nhận, nhấn vào Update List Mailbox và chờ!
+<br />
+<h4><a  name='ma'>Manage Alias - Quản trị Alias</a></h4>
+<br />Giống như với với quản trị hòm thư. Bạn chỉ được tạo các Alias và tài khoản gốc mà domain thuộc phần sở hữu của bạn!
+<br />
+<h4><a  name='mg'>Manage Group - Quản trị Group</a></h4>
+<br /> Group hay Distributions list là 1 email đại diện, qua đó nó sẽ phân phối lại email tới các địa chỉ trong danh sách khi nó nhận được email.
+<br /> Có vài điểm khác, mặc dù cơ bản là vẫn giống các tính năng trên.
+<br />Đầu tiên bạn cần lấy danh sách Group (nhấn vào Update list now hay Update list group) để xem các nhóm của bạn sở hữu.
+<br />Tiếp theo, khi bạn click vào bất kì cái nào, nó sẽ ra các danh sách email thuộc nhóm này. Tuy nhiên bạn PHẢI CẬP NHẬT (Update list) để lấy các account này ( bằng cách kích vào link Update list now)!
+<br />Để tạo mới, nhấn vào Add email to this group, hoặc sửa, xóa bất kì tài khoản nào.
+<br />Mỗi lần thao tác xong, bạn cần nhấn vào cập nhập danh sách!
+<br />
+<br />
+
+</div>
+</body>
+</html>

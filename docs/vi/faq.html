@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Danh mục</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Trang chủ</a><br /></li>
+	
+	<li><a href='intro.html'>Giới thiệu </a><br /></li>
+	<li><a href='download.html'>Tải phần mềm </a><br /></li>
+	<li>Trợ giúp và giúp đỡ <ul>
+		<li><a href='install.html'>Cài đặt</a><br /></li>
+	<li><a href='config.html'>Thiết đặt</a><br /></li>
+	<li><a href='guide.html'>Hướng dẫn sử dụng </a><br /></li>
+	<li><a href='security.html'>Bảo mật </a><br /></li>
+	<li><a href='faq.html'>Các câu hỏi </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>Về phần mềm </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>Các câu hỏi thường gặp</h3>
+<hr>
+List FQA:<br />
+<br>
+<h3><font color=red> ZaaS chạy như thế nào?</font></h3>
+<hr>
+Dưới đây là mô tả quá trình thực thi của ZaaS.<br />
+<br />Trước tiên, cần cài đặt và thiết đặt trên máy chủ Zimbra (sao chép file phpchecker, đặt lịch chạy - crontab - để thực thi file php này. 
+Bạn cần thiết đặt 1 số thứ như: địa chỉ trang Drupal, IP của server  và mật khẩu cho quá trình giao dịch.
+<br />Tiếp theo, bạn cần cài đặt Drupal (nếu như bạn chưa có), và cài module : ZaaS rồi kích hoạt cho phép nó chạy.
+Sau đó, bạn phải tạo các role (là các kiểu quyền trong Drupal) và gán các quyền mới này cho các user ( cái mà có hậu tố tên là các domain, ví dụ: admin@zaasmhst.com. Khi đã hoàn thành, tạo các kết nối với IP, mật khẩu giống như trên máy chủ Zimbra.
+<br /><b>Khi bạn tạo 1 lệnh cho Zimbra, bạn phải chờ 1 thời gian để máy chủ Zimbra truy cập tới Drupal và lấy lệnh thực thi đó.  </b>
+<br /><font color=red>Lệnh bạn tạo ra được lưu trong CSDL của Drupal. Do đã lên lịch chạy ở phía máy chủ, Zimbra sẽ định kì truy cập tới hệ thống Drupal để lấy lệnh thực thi về.</font>
+<br />
+<h3>Vậy liệu còn cách khác để thực thi lệnh?</h3>
+<hr>
+<br /> Tất nhiên, chúng ta có cách khác để thực thi lệnh.
+<br /> Có 2 cách để thực thi lệnh: chạy gián tiếp (như bản này) và chạy trực tiếp. Thế nào là "chạy trực tiếp"? Nghĩa là lệnh bạn tạo ra sẽ được thực thi ngay lập tức bởi Zimbra.
+<br />Bằng cách này, Drupal cần kết nối trực tiếp với Zimbra server và gửi lệnh. Như vậy bạn gần như ko mất thời gian chờ đợi. Vậy còn những điểu bất lợi?
+<br />Đầu tiên, nếu bạn có lỗi trong lệnh, bạn không thể trì hoãn hay tạm dừng nó.
+<br />
+<h3> Có bao nhiêu kiểu (quyền) user, và các quyền này có thể làm được gì?</h3>
+<hr>
+<br />Công cụ này sử dụng 3 Quyền để điều khiển, đó là: Super Admin (quyền cao nhất), Tenant và Domain manager.
+<br />Super Admin: là user có thể điều khiển hệ thống, tạo/ngừng các kết nối giữa Drupal và Zimbra. Thường thì user này là tài khoản ROOT của Drupal. Anh ta có thể gán quyền quản trị domain cho các Tenant
+<br />Tenant: là quyền cao hơn một chút. User này chỉ có thể tạo ra các Domain manager thuộc domain của anh ta. Và anh ta có thể quản trị toàn bộ mailbox, alias, group mà anh ta đã được gán.
+<br />Domain manager: và người dùng cơ bản. Anh ta chỉ quản lý MỘT domain thuộc quyền của anh ta, và ko thể tạo hơn. Anh ta có thể tạo Mailbox, Alias, Group.
+<br />
+<br />
+<h3> Sự khác biệt Tài khoản giữa Drupal và Zimbra?</h3>
+<hr>
+<br />Bạn sẽ thấy rằng ko hề có sự liên hệ nào giữa Drupal và Zimbra server. Bạn phải tạo 2 tài khoản đồng thời. Nhưng theo quy ước, bạn nên tạo tài khoản Drupal giống với các user trên Zimbra (tức là tên các hòm thư- email).
+<br />
+<h3> Có nhất thiết phải tạo 1 tài khoản trên Drupal dạng email @company.com?</h3>
+<hr>
+<br />Như đã đề cập, theo quy ước, bạn nên đặt tên User trên Drupal giống như bên Zimbra. Việc này dễ dàng trong việc quản lý, đọc hiểu, biết được user đó thuộc domain nào,... Nếu ko muốn, bạn vẫn có thể chọn 1 tên mà không có dạng email.
+<br />
+<h3> Tôi có cần phải tự tạo các user trong Drupal cho Tenant, Domain manager không?</h3>
+<hr>
+<br /> Nếu bạn đọc kĩ phần hướng dẫn sử dụng, bạn sẽ thấy, việc tạo là các user là tự động khi tạo mới Tenant hay Domain manager (nếu user đó chưa có trên Drupal). Tự động gán quyền (role) cho các user này!
+<br />
+
+</div>
+</body>
+</html>

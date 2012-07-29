@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Danh mục</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Trang chủ</a><br /></li>
+	
+	<li><a href='intro.html'>Giới thiệu </a><br /></li>
+	<li><a href='download.html'>Tải phần mềm </a><br /></li>
+	<li>Trợ giúp và giúp đỡ <ul>
+		<li><a href='install.html'>Cài đặt</a><br /></li>
+	<li><a href='config.html'>Thiết đặt</a><br /></li>
+	<li><a href='guide.html'>Hướng dẫn sử dụng </a><br /></li>
+	<li><a href='security.html'>Bảo mật </a><br /></li>
+	<li><a href='faq.html'>Các câu hỏi </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>Về phần mềm </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>Giới thiệu về ZaaS</h3>
+<hr>
+ZaaS là phần mở rộng tính năng cho phiên bản Zimbra Mã nguồn mở - miễn phí nhưng bị giới hạn vài tính năng. Zimbra as a Service sử dụng giao diện là web Drupal để tương tác giữa người dùng là các quản trị domain với hệ thống mail server Zimbra. Các tính năng của phần mềm: 
+<br />System Admin - Quản trị hệ thống: Quản lý định mức, Quản lý tenant, Lên kế hoạch thực thi (từ trong CSDL).
+
+<br />Domain Admin: Quản trị hòm thư (mailbox), Quản lý alias, Quản lý group (Distributions list)
+
+<br />Tenant: Quản trị domain
+<br>
+<h3>PHPChecker</h3>
+Công cụ này có vài điểm đặc biệt. Trước tiên nó dùng 1 trình duyệt ảo (HTTPClient) để gửi yêu cầu tới máy chủ Drupal để lấy lệnh. Sau đó thực thi lệnh này dưới quyền của user zimbra - trong linux, bởi vì các chương trình của zimbra (ví dụ: zmprov, zmcontrol,...) yêu cầu user thực thi phải chính xác là ZIMBRA. Vì thế user thực thi đoạn mã PHP này phải đủ quyền hạn, ví dụ như ROOT user.
+<br />HTTPClient được sử dụng trong công cụ này được lập trình bởi Simon Willison ( http://simon.incutio.com/ )
+<br />
+<h3><font color=red> ZaaS chạy như thế nào?</font></h3>
+<hr>
+Dưới đây là mô tả quá trình thực thi của ZaaS.<br />
+<br />Trước tiên, cần cài đặt và thiết đặt trên máy chủ Zimbra (sao chép file phpchecker, đặt lịch chạy - crontab - để thực thi file php này. 
+Bạn cần thiết đặt 1 số thứ như: địa chỉ trang Drupal, IP của server  và mật khẩu cho quá trình giao dịch.
+<br />Tiếp theo, bạn cần cài đặt Drupal (nếu như bạn chưa có), và cài module : ZaaS rồi kích hoạt cho phép nó chạy.
+Sau đó, bạn phải tạo các role (là các kiểu quyền trong Drupal) và gán các quyền mới này cho các user ( cái mà có hậu tố tên là các domain, ví dụ: admin@zaasmhst.com. Khi đã hoàn thành, tạo các kết nối với IP, mật khẩu giống như trên máy chủ Zimbra.
+<br /><b>Khi bạn tạo 1 lệnh cho Zimbra, bạn phải chờ 1 thời gian để máy chủ Zimbra truy cập tới Drupal và lấy lệnh thực thi đó.  </b>
+<br /><font color=red>Lệnh bạn tạo ra được lưu trong CSDL của Drupal. Do đã lên lịch chạy ở phía máy chủ, Zimbra sẽ định kì truy cập tới hệ thống Drupal để lấy lệnh thực thi về.</font>
+<br />
+<h3><font color=red> Có các câu hỏi khác nữa?</font></h3>
+<br /> Xem phần Các câu hỏi, hoặc gửi các phản hồi của bạn về chúng tôi. Trân thành cám ơn bạn!
+
+</div>
+</body>
+</html>

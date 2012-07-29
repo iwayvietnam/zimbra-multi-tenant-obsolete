@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Menu</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Home</a><br /></li>
+	
+	<li><a href='intro.html'>Introduction </a><br /></li>
+	<li><a href='download.html'>Download </a><br /></li>
+	<li>Help and Support <ul>
+		<li><a href='install.html'>Install</a><br /></li>
+	<li><a href='config.html'>Configuration</a><br /></li>
+	<li><a href='guide.html'>Usage guide </a><br /></li>
+	<li><a href='security.html'>Security </a><br /></li>
+	<li><a href='faq.html'>FAQ </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>About </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>How to use ZaaS</h3>
+<hr>
+<br />After config all Zimbra server and Drupal CMS ( created new user (tenant or domain manager), new connection (IP and passkey) sucessfully), We start working with ZaaS. ZaaS has some features corresponding to user kinds.
+<br /><ul>
+	<li>SuperAdmin<ul>
+	<li><a href='#mc'>Manage Server connections</a></li>
+	<li><a href='#mt'>Manage Tenant</a></li>
+	</ul>
+	<br /></li>
+	<li>Tenant<ul>
+	<li><a href='#md'>Manage Domain manager</a></li>
+	</ul>
+	<br /></li>
+	<li>Domain manager <ul>
+	<li><a href='#cs'>Command status</a></li>
+	<li><a href='#mm'>Manage MailBox</a></li>
+	<li><a href='#ma'>Manage Alias</a></li>
+	<li><a href='#mg'>Manage Group</a></li>
+	</ul><br /></li>
+	</ul>
+<br />
+<hr>
+<h3><u>SuperAdmin</u></h3>
+<h4><a  name='mc'>Manage Server connections</a></h4>
+<br /> A Zimbra server want to connect to this Drupal CMS to get command, must pass by password and IP.
+<br />And A command created by user in Drupal need to determine IP server to return.
+<br />So each domain need to determine corresponding to IP with password key, like:
+<br /><img src='../files/manager_server.png' />
+<br />To create new, click Create New Servers Connection, and input IP, domain, passkey.
+<br />To Edit, click IP link.
+<br />To Delete, click Delete link in same row.
+<br />
+<h4><a  name='mt'>Manage Tenant</a></h4>
+<br />
+<br /><img src='../files/manage_tenant.png' />
+<br /> If name of this Tenant account does not exist in Drupal, it is automical to create new user with given password.
+<br />
+<br />
+<h3><u>Tenant</u></h3>
+<h4><a  name='mu'>Manage Users</a></h4>
+<br /><b>This tool for Tenant assign permission and 1 domain for Domain manager.</b>
+<br />The tenant can set Domain managers who control what domain and quota (Quota: number of mailbox he can create).
+<br />The Domain manager have no permission to go to this page
+<br />Belows, picture shows form for creating new assign permission
+<br /><img src='../files/manage_DM.png' />
+<br />If name of this Domain manager account does not exist in Drupal, it is automical to create new user with given password.
+<br />And send to Zimbra command: add new domain, by IP.
+<br />Usage is very simple, click and use!
+<br />
+<h3><u>Tenant and Domain manager</u></h3>
+<h4><a  name='cs'>Command status</a></h4>
+<br />This tool list all command created by user, such as create new, edit, delete,... Both new and old command in history.
+<br />This shows all commands in Database. There are some kinds of command. Status is: 
+<ul><li>Waiting: still wait until to send Zimbra server, it means that this command has not executed yet.</li>
+<li>Processing: Zimbra server got this command and in processing</li>
+<li>Done: It means this command is completely executed!</li></ul>
+<br />See picture for more detail:
+<br /><img src='../files/command_status.png' />
+<br />So, If command is in waiting status, You can Disable it to pause, or Delete if you do not want it to execute. And you can Enable if it is disabled!
+<br />
+<h4><a  name='mm'>Manage MailBox</a></h4>
+<br />MailBox or Account, is where mail come in and is sent by user.
+<br />First using, You need renew it (or when You want to refresh), click Update List Mailbox, and wait Zimbra server processing this command. It will list all accounts which domains belongs to you(Tenant or Domain manager user).
+<br />You see "Just updated, please wait until it is processed.", and wait about 1 minute, and click back to Manager Mailbox, you will see all your accounts.
+<br />To create new, click Create New Mailbox, choose domains that you own. You can set some basic information such as Display name, password and mailbox Quota.
+<br />If you want to delete or edit, click link and edit. After confirming, click  Update List Mailbox and wait!
+<br />
+<h4><a  name='ma'>Manage Alias</a></h4>
+<br />It is like Manage Mailbox. You must create Alias Accounts and Orgin Accounts which belong to you or can not execute.
+<br />
+<h4><a  name='mg'>Manage Group</a></h4>
+<br /> Group or Distributions list is representation email address which distribute any emails, sent to it, to every accounts in this list.
+<br /> There are some special things, but almost things are like above.
+<br />First you need to get Group list ( click Update list now or Update list group) to see all your group.
+<br />Next, when you click to anyone, It will come to list email belongs to this group. But you MUST UPDATE LIST to get all accounts in this group (by click Update list now)!
+<br />To Add new, click Add email to this group, or you can Edit, Remove any accont.
+<br />
+<br />
+<br />
+
+</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>Zaas - Zimbra as a service</title>
+<link rel="icon" href="logo.gif" type="image/gif" />
+<link rel="shortcut icon" href="logo.gif" type="image/gif" />
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+</head>
+<body bgcolor="#F8F3D2" style='width:750px;text-align:center;margin:0 auto;'>
+<div  style='width:750px;text-align:left;'>
+<table border=0><tr><td><img src='logo.gif' width=60px></td><td><br /><h1> Zimbra as a service </h1></td></tr></table>
+<div style='width:200px;float:left;margin-top:80px;padding-left:20px;border:solid 1px gray;'>
+<div style='width:90%;border-left:solid 2px gray;padding-left:5px;'>
+	<h3>Danh mục</h3>
+	<hr>
+	<ul>
+	<li><a href='index.html'>Trang chủ</a><br /></li>
+	
+	<li><a href='intro.html'>Giới thiệu </a><br /></li>
+	<li><a href='download.html'>Tải phần mềm </a><br /></li>
+	<li>Trợ giúp và giúp đỡ <ul>
+		<li><a href='install.html'>Cài đặt</a><br /></li>
+	<li><a href='config.html'>Thiết đặt</a><br /></li>
+	<li><a href='guide.html'>Hướng dẫn sử dụng </a><br /></li>
+	<li><a href='security.html'>Bảo mật </a><br /></li>
+	<li><a href='faq.html'>Các câu hỏi </a><br /></li>
+	</ul>
+	</li>
+	<li><a href='about.html'>Về phần mềm </a><br /></li>
+	</ul>
+</div>
+</div>
+<div style='width:490px;float:right;'>
+
+<h3>Thiết đặt ZaaS</h3>
+<hr>
+<br /><br />Ok, Bây giờ chúng ta sẽ thiết đặt 1 số chỗ.
+<br />Roles: từ menu Management, chọn Administration -> Modules -> Nhấn vào Permissions -> Nhấn vào Roles
+<br />Thêm 3 role sau: Tenant, Domain manager, SuperAdmin. Yêu cầu: Tạo ĐÚNG tên 3 role này. Nên dùng copy paste!
+<br />Ok, Giờ Nhấn vào Permissions (link bên dưới), tìm tới chỗ thiết đặt của Zaas.
+<br />Bạn sẽ nhìn 3 quyền: Access admin page, Access zimbra page, Supper Admin manages page:
+	<ul><li>Access admin page: Cho phép <b>Tenant và super Admin</b></li>
+	<li>Access zimbra page: Cho phép <b>domain admin</b> quản lý domain của mình</li>
+	<li>Supper Admin manages page: Cho phép <b>SUPER admin</b> quản lý domain và các máy chủ</li></ul>
+<br />chọn giống như trong ảnh và Nhấn vào Save permissions
+<br /><img src='../files/permission.png' width=450px>
+<br />Chúc mừng, bạn đã đặt xong các thiệt đặt. Chúng ta tiếp tục
+<br />
+<br />
+<br /><b>Zimbra server</b>
+<br />Đơn giản,thiết đặt file phpchecker ( sửa file phpchecher.php) và thiết lập như sau:
+<pre>
+$urli = 'hlp007.com';		// URL của trang web Drupal
+$url = '/dp/';			// đường / dẫn/ drupal/ 
+$secret = '123456az';	// Mật khẩu để truy cập tới Drupal
+$domain = 'zaasmhst.com,';	// Domain của server này
+$server = '119.15.161.24';	//IP của server Zimbra này
+</pre>
+<br /> Trong công cụ này có sử dụng trình duyệt ảo HttpClient để kết nối tới Drupal server.
+<br /> Bạn cần cài đặt trình thông dịch PHP để chạy code này. Nếu bạn muốn kiểm tra bằng trình duyệt thì phải cài đặt Webserver (Apache) hỗ trợ PHP và copy file này tới thư mục dạng htdocs
+<br /> Để kiểm tra, chạy phpchecker trong trình duyệt, nếu bạn nhận được "No command. Return", thì server đã hoạt động tốt.
+<br />
+<br /> Nếu bạn muốn test bằng trình duyệt, thì Webserver, trong server mà tôi dùng là Apache, phải chạy dưới quyền của root. Bời vì chúng ta cần gọi 1 só hàm thuộc Zimbra server. Mở file httdp.conf và tìm các dòng có User, Group rồi thay đổi như sau
+<pre>
+User <b>root</b>
+Group <b>root</b>
+</pre>
+<br /><b>Lập lịch</b>
+<br /> Tốt, bây giờ chúng ta sẽ tạo cron job cho phpchecker.
+<br /> sửa crontab
+<pre>
+crontab -e
+
+*/2 * * * * root php /var/www/html/phpchecker.php
+</pre>
+<br />*/2 : Thời gian theo phút. */2 = mỗi phút 1 lần.
+<br />root : user sẽ chạy (bởi vì chúng ta cần chạy 1 số hàm thuộc user zimbra).
+<br />php : trình thực thi PHP.
+<br />/var/www/html/phpchecker.php: đường dẫn tới file phpchecker
+</div>
+</body>
+</html>
