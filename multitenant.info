@@ -1,5 +1,0 @@
-name = MultiTenant
-description = Zimbra multi-tenancy.
-core = 7.x
-files[] = multiTenant.module
-version = "1.0"
