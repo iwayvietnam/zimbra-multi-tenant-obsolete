@@ -82,7 +82,6 @@ function multitenant_menu() {
     'access arguments' => array('access admin page'),
   );
   */
-  
   ############################# COMMAND RESULT #####################################
   $items['zimbra/admin/command'] = array(
     'title' => 'Command Status',
@@ -138,7 +137,9 @@ function multitenant_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('multitenant_admin_user','delete',4),
   );
-  
+  ############################  End manage Tenan   ###################################### 
+
+
   ############################  Manage Unit   ###################################### 
   $items['zimbra/admin/unit'] = array(
     'title' => 'Manage Unit',
@@ -173,11 +174,45 @@ function multitenant_menu() {
     'page arguments' => array('unit_admin_user','delete',5),
   );
   
-   ############################  End Unit  ######################################
-   
-   
-   
-  ############################  Manage Domain manager   ###################################### 
+   ############################  End Unit  #################################
+  ############################  Manage Group   ###################################### 
+  $items['zimbra/admin/group'] = array(
+    'title' => 'Manage Group',
+    'page callback' => 'group_admin_user',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('super admin page'),
+  );
+    $items['zimbra/admin/group/create'] = array(
+    'title' => 'Create Group',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('group_admin_user','create'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/group/list'] = array(
+    'title' => 'Group list',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'group_admin_user',
+    'page arguments' => array('','','list'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/group/edit/%'] = array(
+    'title' => 'Edit Group',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('group_admin_user','edit',5),
+  );
+  $items['zimbra/admin/group/delete/%'] = array(
+    'title' => 'Delete Group',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('group_admin_user','delete',5),
+  );
+  
+   ############################  End Unit  #################################
+
+
+  ############################  Manage Domain manager ######################
   $items['zimbra/admin/domainmanager'] = array(
     'title' => 'Manage Domain Manager',
     'page callback' => 'multitenant_admin_domainmanager',
