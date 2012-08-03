@@ -82,7 +82,7 @@ function multitenant_schema() {
     'primary key' => array('id'),
   );
 
-////////////////////Bang zmpasskey
+////////////////////Bang zmpasskey Pham kach tuy
   $schema['zmpasskey'] = array(
     'description' => 'Identifies key for each server when It contact to Drupal Server',
     'fields' => array(
@@ -235,6 +235,43 @@ $schema['zmunit'] = array(
     ),
     'primary key' => array('id'),
   );
+
+//Tao bang nhom
+//Bang zmgroup
+$schema['zmgroup'] = array(
+    'description' => 'Group',
+    'fields' => array(
+      'id' => array(
+        'description' => 'ID Group',
+        'type' => 'serial',
+      ),
+      'namedisplay' => array(
+        'description' => 'Display name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'namezimbra' => array(
+        'description' => 'Name Group on zimbra(Khong chua ki tu dac biet).',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+
+      'manager' => array(
+        'description' => 'Manager.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+
   return $schema;
   
   
