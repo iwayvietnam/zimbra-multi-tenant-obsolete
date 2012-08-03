@@ -10,12 +10,16 @@ ini_set('display_errors',1);
 /**
  * Implements hook_help().
  */
+
 function multitenant_help($path, $arg) {
   // Remind site administrators about the {multitenant_access} table being flagged
   // for rebuild. We don't need to issue the message on the confirm form, or
   // while the rebuild is being processed.
   
 }
+
+
+
 function multitenant_permission() {
   return array(
     'access admin page' => array(
@@ -32,6 +36,8 @@ function multitenant_permission() {
     ),
   );
 }
+
+
 function multitenant_menu() {
 	$items['sv/%/%/%'] = array(
     'title' => 'Handle Server Connection',
