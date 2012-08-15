@@ -81,13 +81,8 @@ function multitenant_menu() {
     'access arguments' => array('super admin page'),
   );
   ############################ END server   ######################################
-  /*
-  $items['zimbra/admin/domain'] = array(
-    'title' => 'Manager Domain',
-    'page callback' => 'multitenant_admin_domain',
-    'access arguments' => array('access admin page'),
-  );
-  */
+
+
   ############################# COMMAND RESULT #####################################
   $items['zimbra/admin/command'] = array(
     'title' => 'Command Status',
@@ -145,9 +140,82 @@ function multitenant_menu() {
   );
   ############################  End manage Tenan   ###################################### 
 
+  ############################  Manage User   ###################################### 
+  $items['zimbra/admin/user'] = array(
+    'title' => 'Manage Z User',
+    'page callback' => 'user_admin_user',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('super admin page'),
+  );
+    $items['zimbra/admin/user/create'] = array(
+    'title' => 'Create New User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_admin_user','create'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/user/list'] = array(
+    'title' => 'List all User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'user_admin_user',
+    'page arguments' => array('','','list'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/user/edit/%'] = array(
+    'title' => 'Edit a User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_admin_user','edit',4),
+  );
+  $items['zimbra/admin/user/delete/%'] = array(
+    'title' => 'Delete a User',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_admin_user','delete',4),
+  );
+  ############################  End manage user   ###################################### 
+
+
+  ############################  Manage Groups   ###################################### 
+  $items['zimbra/admin/groups'] = array(
+    'title' => 'Manage Z Groups',
+    'page callback' => 'groups_admin_user',
+    'page arguments' => array('','','list'),
+    'access arguments' => array('super admin page'),
+  );
+    $items['zimbra/admin/groups/create'] = array(
+    'title' => 'Create New Groups',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('groups_admin_user','create'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/groups/list'] = array(
+    'title' => 'List all Groups',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'groups_admin_user',
+    'page arguments' => array('','','list'),
+  'type' => MENU_LOCAL_TASK,
+  );
+  $items['zimbra/admin/groups/edit/%'] = array(
+    'title' => 'Edit a Groups',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('groups_admin_user','edit',4),
+  );
+  $items['zimbra/admin/groups/delete/%'] = array(
+    'title' => 'Delete a Groups',
+    'access arguments' => array('super admin page'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('groups_admin_user','delete',4),
+  );
+  ############################  End manage Groups   ###################################### 
+
+
+
   ############################  Manage Unit   ###################################### 
   $items['zimbra/admin/unit'] = array(
-    'title' => 'Manage Unit',
+    'title' => 'Manage Z Unit',
     'page callback' => 'unit_admin_user',
     'page arguments' => array('','','list'),
     'access arguments' => array('super admin page'),
@@ -790,24 +858,364 @@ function multitenant_admin_user($form, $form_state,$type='',$action='') {
 
 ############################  END Tenant   ######################################
 
-############################  Manage Unit   ######################################
-function unit_admin_user_submit($form, $form_state) {
+############################  USER   ######################################
+
+function user_admin_user_submit($form, $form_state) {
   global $user;
   $username = $user->name;
   if( $form_state['values']['typeaction'] == 'edit' ) {
     $entry = array();
-    $entry['namedisplay'] = $form_state['values']['namedisplay'];
-    $entry['namezimbra'] = $form_state['values']['namezimbra'];
-    /*
+    $entry['user'] = $form_state['values']['user'];
     $entry['ip'] = '';
     foreach($form_state['values']['ip'] as $key=>$value) {
       if($value != '') $entry['ip'] .= $value.',';
     }
     $entry['ip'] = trim($entry['ip'],',');
-    */
+    $entry['quota'] = $form_state['values']['quota'];
+    $id = $form_state['values']['id'];
+    db_update('zuser')
+                ->fields($entry)
+                ->condition('id', $id)
+                ->execute();                
+    drupal_set_message('Update sucessfull!');
+  }
+  else if( $form_state['values']['typeaction'] == 'create' )  {
+    $entry = array();
+    $entry['user'] = $form_state['values']['user'];
+    //$entry['ip'] = $form_state['values']['ip'];
+    $entry['quota'] = $form_state['values']['quota'];
+    foreach( user_roles() as $idper=>$per) {
+      if($per == 'Tenant') break;
+    }
+    if( $per != 'Tenant') die('Please SET ROLE as discription in DOCUMENTARY');
+    db_insert('zuser')
+                    ->fields($entry)
+                    ->execute();
+    // insert new User:
+    $check_ =  user_load_by_name( $form_state['values']['user'] );
+    if( empty( $check_) ) {
+      $info = array('status' => 1,
+        'roles' => array($idper=>'Tenant'),
+        'pass' => $form_state['values']['pass'],
+        'name' => $form_state['values']['user'],
+        'mail' => $form_state['values']['user'],
+        'init' => $form_state['values']['user'],
+        );
+      user_save(NULL,$info);
+      drupal_set_message('Create Drupal user suceessful!');
+    }
+    drupal_set_message('Create user suceessful!');
+  }
+  else if( $form_state['values']['typeaction'] == 'delete' ) {
+    $id = $form_state['values']['id'];
+    db_delete('zuser')
+             ->condition('id', $id)
+            ->execute();
+    drupal_set_message('Delete suceessful!');
+  }
+}
+
+  
+ 
+function user_admin_user($form, $form_state,$type='',$action='') {
+  global $user;
+  $username = $user->name;
+  $str = '<h1>' . t('Manager User.') . '</h1><p>' . t('This page for only unit and admin access.') . '</p>';
+    if(  $type == 'edit') {
+        $select = db_select('zunit', 'c')
+        ->fields('c')
+        ->condition('id', $action)
+        ->execute();
+      $rs = $select->fetchAll();
+      $r = $rs[0];
+      // display form input
+      $form['user'] = array(
+        '#type' => 'textfield',
+        '#default_value'=> $r->user,
+        '#title' => t('Edit name of account ').$r->user,
+      );
+      $server_list = multitenant_getServer();
+      $ser_sel = explode(',',$r->ip);
+      $ser_sel2 = array_values($ser_sel);
+      $ser_sel = array_combine($ser_sel2,$ser_sel);
+      $form['ip'] = array(
+        '#type' => 'checkboxes', 
+        '#title' => t('Default options'), 
+        '#default_value' =>$ser_sel,
+        '#options' => $server_list
+        );
+      $form['quota'] = array(
+        '#type' => 'textfield',
+        '#default_value'=> $r->quota,
+        '#title' => t('Number of domain this Tenant can create '),
+      );
+      $form['typeaction'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> 'edit',
+      );
+      $form['id'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> $action,
+      );
+      $form['submit'] = array(
+        //  '#name' => 'finish',
+        '#value' => t('Save Edit'),
+        '#type' => 'submit',
+        //  '#submit' => array('multitenant_admin_server_create_form_submit'),
+        );
+      return $form;
+  }
+  else if(  $type == 'create') {
+    $unit = unit_getServer();
+    $group = group_getServer();
+    $form['namedisplay'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Create Name Display User'),
+    );
+    $form['namezimbra'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Create Account Zimbra User'),
+    );
+    $form['pass'] = array(
+      '#type' => 'password',
+      '#title' => t('Password'),
+    );
+    $form['unit'] = array(
+      '#type' => 'select',
+      '#title' => t('Unit'),
+      '#options' => $unit,
+    );
+    $form['group'] = array(
+      '#type' => 'select', 
+      '#title' => t('Group'), 
+      '#options' => $group,
+      );
+    $form['typeaction'] = array(
+      '#type' => 'hidden',
+      '#default_value'=> 'create',
+    );
+    $form['submit'] = array(
+      '#value' => t('Create'),
+      '#type' => 'submit',
+      );
+    return $form;
+  }
+  else if(  $type == 'delete') {
+    $form['id'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> $action,
+      );
+      $form['typeaction'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> 'delete',
+      );
+    $form['submit'] = array(
+        '#value' => t('Confirm delete account ID: ').$action,
+        '#type' => 'submit',
+        );
+    return $form;
+  }
+  else {
+    
+      $select = db_select('zuser', 'c')->fields('c')->execute();
+      ini_set('display_errors',0);
+      $rs = $select->fetchAll();
+      if ( !empty($rs) ) {
+        $str .= '<table border=0><tr><td>ID</td><td>Name</td><td>User</td><td>Unit</td><td>Group</td><td>Edit</td><td>Delete</td></tr>';
+        $i = 1;
+        
+        foreach ($rs as $r ) {
+          //$arr = $r->result;
+        //  var_dump($r);
+          $str .= t('<tr><td>'.$i.'</td><td>'.$r->namedisplay.'</td><td>'.$r->namezimbra.'</td><td>'.$r->unit.'</td><td>'.$r->group.'</td><td><a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+                array('@simple_link' => url('zimbra/admin/user/edit/'.$r->id, array('absolute' => TRUE)),
+                      '@simple_link2' => url('zimbra/admin/user/delete/'.$r->id, array('absolute' => TRUE)) )
+                );
+            
+            $i++;
+          
+        }
+        $str .= '</table><br />';
+      }
+  }
+  return array('#markup' => $str);
+}
+############################  END User   ######################################
+
+
+
+############################  GROUPS   ######################################
+
+function groups_admin_user_submit($form, $form_state) {
+  global $user;
+  $username = $user->name;
+  if( $form_state['values']['typeaction'] == 'edit' ) {
+    $entry = array();
+    $entry['user'] = $form_state['values']['user'];
+    $entry['ip'] = '';
+    foreach($form_state['values']['ip'] as $key=>$value) {
+      if($value != '') $entry['ip'] .= $value.',';
+    }
+    $entry['ip'] = trim($entry['ip'],',');
+    $entry['quota'] = $form_state['values']['quota'];
+    $id = $form_state['values']['id'];
+    db_update('zgroup')
+                ->fields($entry)
+                ->condition('id', $id)
+                ->execute();                
+    drupal_set_message('Update sucessfull!');
+  }
+  else if( $form_state['values']['typeaction'] == 'create' )  {
+    $entry = array();
+    $entry['namedisplay'] = $form_state['values']['namedisplay'];
+    $entry['namezimbra'] = $form_state['values']['namezimbra'];
+    $entry['unit'] = $form_state['values']['unit'];
+    //$entry['unit'] = $form_state['values']['unit'];
+    db_insert('zgroups')
+                    ->fields($entry)
+                    ->execute();
+    drupal_set_message('Create groups suceessful!');
+  }
+  else if( $form_state['values']['typeaction'] == 'delete' ) {
+    $id = $form_state['values']['id'];
+    db_delete('zgroups')
+             ->condition('id', $id)
+            ->execute();
+    drupal_set_message('Delete suceessful!');
+  }
+}
+
+  
+ 
+function groups_admin_user($form, $form_state,$type='',$action='') {
+  global $user;
+  $username = $user->name;
+  $str = '<h1>' . t('Manager Groups.') . '</h1><p>' . t('This page for only unit and admin access.') . '</p>';
+    if(  $type == 'edit') {
+        $select = db_select('zgroups', 'c')
+        ->fields('c')
+        ->condition('id', $action)
+        ->execute();
+      $rs = $select->fetchAll();
+      $r = $rs[0];
+      // display form input
+      $form['user'] = array(
+        '#type' => 'textfield',
+        '#default_value'=> $r->user,
+        '#title' => t('Edit name of account ').$r->user,
+      );
+      $server_list = multitenant_getServer();
+      $ser_sel = explode(',',$r->ip);
+      $ser_sel2 = array_values($ser_sel);
+      $ser_sel = array_combine($ser_sel2,$ser_sel);
+      $form['ip'] = array(
+        '#type' => 'checkboxes', 
+        '#title' => t('Default options'), 
+        '#default_value' =>$ser_sel,
+        '#options' => $server_list
+        );
+      $form['quota'] = array(
+        '#type' => 'textfield',
+        '#default_value'=> $r->quota,
+        '#title' => t('Number of domain this Tenant can create '),
+      );
+      $form['typeaction'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> 'edit',
+      );
+      $form['id'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> $action,
+      );
+      $form['submit'] = array(
+        '#value' => t('Save Edit'),
+        '#type' => 'submit',
+        );
+      return $form;
+  }
+  else if(  $type == 'create') {
+    $unit = unit_getServer();
+    $group = group_getServer();
+    $form['namedisplay'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Create Name Display Groups'),
+    );
+    $form['namezimbra'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Create Account Zimbra Groups'),
+    );
+    $form['unit'] = array(
+      '#type' => 'select',
+      '#title' => t('Unit'),
+      '#options' => $unit,
+    );
+    $form['typeaction'] = array(
+      '#type' => 'hidden',
+      '#default_value'=> 'create',
+    );
+    $form['submit'] = array(
+      '#value' => t('Create'),
+      '#type' => 'submit',
+      );
+    return $form;
+  }
+  else if(  $type == 'delete') {
+    $form['id'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> $action,
+      );
+      $form['typeaction'] = array(
+        '#type' => 'hidden',
+        '#default_value'=> 'delete',
+      );
+    $form['submit'] = array(
+        '#value' => t('Confirm delete groups ID: ').$action,
+        '#type' => 'submit',
+        );
+    return $form;
+  }
+  else {
+    
+      $select = db_select('zgroups', 'c')->fields('c')->execute();
+      ini_set('display_errors',0);
+      $rs = $select->fetchAll();
+      if ( !empty($rs) ) {
+        $str .= '<table border=0><tr><td>ID</td><td>NameDisplay</td><td>NameZimbra</td><td>Unit</td><td>AdminUnit</td><td>Edit</td><td>Delete</td></tr>';
+        $i = 1;
+        
+        foreach ($rs as $r ) {
+          //$arr = $r->result;
+        //  var_dump($r);
+          $str .= t('<tr><td>'.$i.'</td><td>'.$r->namedisplay.'</td><td>'.$r->namezimbra.'</td><td>'.$r->unit.'</td><td>'.$i.'</td><td><a href="@simple_link">Edit</a></td><td><a href="@simple_link2">Delete</a></td></tr>',
+                array('@simple_link' => url('zimbra/admin/groups/edit/'.$r->id, array('absolute' => TRUE)),
+                      '@simple_link2' => url('zimbra/admin/groups/delete/'.$r->id, array('absolute' => TRUE)) ) 
+                
+                );
+            
+            $i++;
+          
+        }
+        $str .= '</table><br />';
+      }
+  }
+  return array('#markup' => $str);
+}
+############################  END Groups   ######################################
+
+
+
+
+############################  Manage Unit   ######################################
+function unit_admin_user_submit($form, $form_state) {
+  //global $user;
+  //$username = $user->name;
+  if( $form_state['values']['typeaction'] == 'edit' ) {
+    $entry = array();
+    $entry['namedisplay'] = $form_state['values']['namedisplay'];
+    $entry['namezimbra'] = $form_state['values']['namezimbra'];
     $entry['manager'] = $form_state['values']['manager'];
     $id = $form_state['values']['id'];
-    db_update('zmunit')
+    db_update('zunit')
                 ->fields($entry)
                 ->condition('id', $id)
                 ->execute();                
@@ -822,7 +1230,7 @@ function unit_admin_user_submit($form, $form_state) {
       if($per == 'adminunit') break;
     }
     if( $per != 'adminunit') die('Please SET ROLE as discription in DOCUMENTARY');
-    db_insert('zmunit')
+    db_insert('zunit')
                     ->fields($entry)
                     ->execute();
     // insert new User:
@@ -845,7 +1253,7 @@ function unit_admin_user_submit($form, $form_state) {
   }
   else if( $form_state['values']['typeaction'] == 'delete' ) {
     $id = $form_state['values']['id'];
-    db_delete('zmunit')
+    db_delete('zunit')
              ->condition('id', $id)
             ->execute();
     drupal_set_message('Delete suceessful!');
@@ -857,7 +1265,7 @@ function unit_admin_user($form, $form_state,$type='',$action='') {
 	//$manager = $manager->namedisplay;
 	$str = '<h1>' . t('Manager Unit.') . '</h1><p>' . t('Admin.') . '</p>';
   	if(  $type == 'edit') {
-  		  $select = db_select('zmunit', 'c')
+  		  $select = db_select('zunit', 'c')
 				->fields('c')
 				->condition('id', $action)
 				->execute();
@@ -942,7 +1350,7 @@ function unit_admin_user($form, $form_state,$type='',$action='') {
 	}
 	else {
 		
-			$select = db_select('zmunit', 'c')->fields('c')->execute();
+			$select = db_select('zunit', 'c')->fields('c')->execute();
 			ini_set('display_errors',0);
 			$rs = $select->fetchAll();
 			if ( !empty($rs) ) {
@@ -2271,4 +2679,25 @@ function multitenant_getServer() {
 			$arr[$r->ip] = $r->ip;
 		}
 		return $arr;
+}
+
+function unit_getServer() {
+    $select = db_select('zunit', 'c')->fields('c')->execute();
+    $rs = $select->fetchAll();
+    if( empty($rs) ) return FALSE;
+    $arr = array();
+    foreach($rs as $r) {
+      $arr[$r->namezimbra] = $r->namezimbra;
+    }
+    return $arr;
+}
+function group_getServer() {
+    $select = db_select('zgroups', 'c')->fields('c')->execute();
+    $rs = $select->fetchAll();
+    if( empty($rs) ) return FALSE;
+    $arr = array();
+    foreach($rs as $r) {
+      $arr[$r->namezimbra] = $r->namezimbra;
+    }
+    return $arr;
 }

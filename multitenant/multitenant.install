@@ -202,8 +202,8 @@ $schema['zmtenant'] = array(
 
 
 //Tao bang don vi
-//Bang zmunit
-$schema['zmunit'] = array(
+//Bang zunit
+$schema['zunit'] = array(
     'description' => 'Unit',
     'fields' => array(
       'id' => array(
@@ -235,14 +235,12 @@ $schema['zmunit'] = array(
     ),
     'primary key' => array('id'),
   );
-
-//Tao bang nhom
-//Bang zmgroup
-$schema['zmgroup'] = array(
-    'description' => 'Group',
+//Bang zuser
+$schema['zuser'] = array(
+    'description' => 'Unit',
     'fields' => array(
       'id' => array(
-        'description' => 'ID Group',
+        'description' => 'ID Unit',
         'type' => 'serial',
       ),
       'namedisplay' => array(
@@ -253,7 +251,21 @@ $schema['zmgroup'] = array(
         'default' => '',
       ),
       'namezimbra' => array(
-        'description' => 'Name Group on zimbra(Khong chua ki tu dac biet).',
+        'description' => 'Name Unit on zimbra(Khong chua ki tu dac biet).',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'unit' => array(
+        'description' => 'Unit.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'group' => array(
+        'description' => 'Name Unit on zimbra(Khong chua ki tu dac biet).',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -267,6 +279,51 @@ $schema['zmgroup'] = array(
         'not null' => TRUE,
         'default' => '',
       ),
+    ),
+    'primary key' => array('id'),
+  );
+
+
+//Tao bang nhom
+//Bang zgroup
+$schema['zgroups'] = array(
+    'description' => 'Groups',
+    'fields' => array(
+      'id' => array(
+        'description' => 'ID Groups',
+        'type' => 'serial',
+      ),
+      'namedisplay' => array(
+        'description' => 'Display name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'namezimbra' => array(
+        'description' => 'Name Groups on zimbra(Khong chua ki tu dac biet).',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+
+      'unit' => array(
+        'description' => 'Unit.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+
+      'adminunit' => array(
+        'description' => 'Admin Unit.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+
     ),
     'primary key' => array('id'),
   );
