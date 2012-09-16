@@ -95,7 +95,7 @@ $schema['zuser'] = array(
 
 
 //Tao bang nhom
-//Bang zgroup
+//Bang zgroups
 $schema['zgroups'] = array(
     'description' => 'Groups',
     'fields' => array(
